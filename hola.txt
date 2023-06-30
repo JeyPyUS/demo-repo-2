@@ -1,3 +1,58 @@
-hola
- 
-ESTERNÓN IZQUIERDO
+import os
+import logging
+import logging.config
+import tarfile
+import io
+from time import time
+from gzip import BadGzipFile
+from tarfile import ReadError
+from sqlalchemy import MetaData
+from os.path import basename
+
+def main(configuration_file=DEFAULT_CONFIG_FILE, environment=DEFAULT_ENVIRONMENT, log_level=DEFAULT_LOG_LEVEL):
+    '''
+    Main method which executes the extraction, parsing and loading process for each file, loading the data into STG and finally to DWH.
+    '''
+
+    PROJECT_PATH = os.path.abspath(os.path.dirname(__file__))
+    logger = initialize_logger(log_level)
+
+    logger.info('Script initiated')
+    starttime = time()
+
+    gen_config, sftp_aladdin_config, s3_config, load_config, trnf_config = read_configuration(configuration_file, PROJECT_PATH)
+
+    dict_sftp, sftp_path_input, sftp_path_processed, sftp_path_error, sftp_pattern = prepare_sftp_variables(sftp_aladdin_config)
+    
+    s3_bucket, s3_input_folder, s3_processed_folder, s3_not_processed_folder = prepare_s3_variables(s3_config)
+    
+    dict_xml_bbdd_field = prepare_dict_xml_bbdd_field(load_config)
+    
+    stg_schema, stg_table, tmp_schema, tmp_table, dwh_schema, dwh_table = prepare_table_variables(load_config, trnf_config)
+    
+    uniq_cols, scd_cols, sum_cols, avg_cols, max_cols, min_cols = prepare_columns(trnf_config)
+    
+    engine_redshift, meta = create_redshift_connection(environment, logger, stg_schema, stg_table, dwh_schema, dwh_table)
+    
+    logger.info('Transfering files from Aladdin SFTP and uploading them to S3')
+    s3_files = transfer_files_from_sftp_to_s3(dict_sftp, sftp_path_input, sftp_path_processed, sftp_path_error, sftp_pattern, s3_bucket, s3_input_folder, logger)
+    
+    process_s3_files(s3_files, engine_redshift, meta, dict_xml_bbdd_field, stg_schema, stg_table, tmp_schema, tmp_table, dwh_schema, dwh_table, uniq_cols, scd_cols, sum_cols, avg_cols, max_cols, min_cols, logger, s3_bucket, s3_input_folder, s3_not_processed_folder)
+    
+    logger.info(f'Script ended successfully in {time()-starttime} seconds')
+
+def initialize_logger(log_level):
+    logging.config.fileConfig(os.path.join(COMMON_PATH, 'Config', f'{gen_config["log_config_file"]}'), defaults={
+        'logfilename': os.path.join(COMMON_PATH, 'Logs', f'{basename(os.path.dirname(__file__))}.log').replace('\\','/')})
+
+    logger = logging.getLogger()
+    logger.setLevel(log_level)
+    return logger
+
+def read_configuration(configuration_file, project_path):
+    gen_config = cfg.read_section(section = 'globalposition_general', filepath = os.path.join(project_path, configuration_file))
+    sftp_aladdin_config = cfg.read_section(section = 'aladdin_sftp', filepath = os.path.join(project_path, configuration_file))
+    s3_config = cfg.read_section(section = 'globalposition_s3', filepath = os.path.join(project_path, configuration_file))
+    load_config = cfg.read_section(section = 'globalposition_load', filepath = os.path.join(project_path, configuration_file))
+    trnf_config = cfg.read_section(section = 'globalposition_trnf', filepath = os.path.join(project_path, configuration_file))
+    return gen_config, sftp_aladdin
