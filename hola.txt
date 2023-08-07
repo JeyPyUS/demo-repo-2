@@ -22,3 +22,17 @@
     except Exception as e:
         logger.error(f'Script stopped in {time()-starttime} seconds due to an error on the connection to the database.\nError: {e}')
         return None
+
+
+def get_engine_redshift(params_dict):
+
+    import sqlalchemy
+
+    try:
+        engine = sqlalchemy.create_engine(sqlalchemy.engine.url.URL(**params_dict), echo_pool=True)
+        
+    except Exception as e:
+        print("Create engine failed due to {}".format(e))
+        engine = None
+        
+    return engine
