@@ -1,24 +1,24 @@
-def __prepare_sql_columns(alias, cols, agg = None, tagline = None):
-    '''
-    Method which takes the columns in the list "cols" and prepare them separated by comma 
-    and adding the aggregate function and the alias of the table in order to use it in a query statement.
+# Getting the general configuration in Common for the connection to Infinity database
+    conn_redshift_dict = cfg.read_section(section='redshift_infinity_' + environment)
 
-        Args:
-            - alias (string): string with the name of the alias
-            - cols (list): list that contains all the columns to be prepared
-            - agg (string): string that contains the aggregate function to be applied. If it's Null it will mean that we don't need to prepare it for aggregation
-            - tagline (string): string that contains the tagline that it's added at the end of the name of the column in case we want it
+    # Getting the general configuration in Common for the connection to Aurora database
+    conn_aurora_dict = cfg.read_section(section='aurora_datamarts_' + environment)
 
-        Returns:
-            - sql_cols (string): string that contains a prepared chunk of a SQL statement
-    '''
-    
-    sql_cols = ''
-    
-    for i, c in enumerate (cols):
-        if i > 0:
-            sql_cols += f',{agg}({alias}.{c}) as {c}{tagline}' if agg and tagline else f',{agg}({alias}.{c}) as {c}' if agg and not tagline else f',{alias}.{c} as {c}{tagline}' if not agg and tagline else f',{alias}.{c}'
-        else:
-            sql_cols += f'{agg}({alias}.{c}) as {c}{tagline}' if agg and tagline else f'{agg}({alias}.{c}) as {c}' if agg and not tagline else f'{alias}.{c} as {c}{tagline}' if not agg and tagline else f'{alias}.{c}'
-    
-    return sql_cols
+    # Creating the connection to Infinity database
+    engine_redshift = db_utils.get_engine_redshift(conn_redshift_dict)
+
+    # Creating the connection to Aurora database
+    engine_aurora = db_utils.get_engine_redshift(conn_aurora_dict)
+
+    # Checking the connection and getting metadata information for the tables that we are going to use
+    try:
+        connection_redshift = engine_redshift.connect()
+        connection_aurora = engine_aurora.connect()
+        meta_redshift = MetaData(connection_redshift)
+        meta_aurora = MetaData(connection_aurora)
+        meta_redshift.reflect(bind=engine_redshift, schema=stg_schema, only=[stg_table])
+        meta_redshift.reflect(bind=engine_redshift, schema=dwh_schema, only=[dwh_table, dwh_table_factsheet])
+        meta_aurora.reflect(bind=engine_aurora, schema=dtm_schema, only=[dtm_table, dtm_table_factsheet])
+    except Exception as e:
+        logger.error(f'Script stopped in {time()-starttime} seconds due to an error on the connection to the database.\nError: {e}')
+        return None
