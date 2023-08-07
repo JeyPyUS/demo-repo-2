@@ -1,1 +1,34 @@
-hola
+CREATE TABLE IF NOT EXISTS SAMDataMartPre.dtm_sam_pos_tb_mm_fac_posglofactsheet
+(
+	dat_fact VARCHAR(50)   ENCODE lzo,
+	cod_portfolio VARCHAR(256)   ENCODE lzo
+	,nam_portfoliofullname VARCHAR(256)   ENCODE lzo
+	,per_nav NUMERIC(38,22)   ENCODE az64
+	,per_notl NUMERIC(38,22)   ENCODE az64
+	,per_navadj NUMERIC(38,22)   ENCODE az64
+	,per_notladj NUMERIC(38,22)   ENCODE az64
+	,imp_price NUMERIC(38,22)   ENCODE az64
+	,num_origface NUMERIC(38,22)   ENCODE az64
+	,per_fxrate NUMERIC(38,22)   ENCODE az64
+	,cod_country VARCHAR(256)   ENCODE lzo
+	,cod_currency VARCHAR(256)   ENCODE lzo
+	,cod_portfbasecurrency VARCHAR(256)   ENCODE lzo
+	,cod_cusip VARCHAR(256)   ENCODE lzo
+	,cod_isin VARCHAR(256)   ENCODE lzo
+	,cod_sedol VARCHAR(256)   ENCODE lzo
+	,dat_maturity VARCHAR(256)   ENCODE lzo
+	,imp_mktvalue NUMERIC(38,22)   ENCODE az64
+	,imp_notional NUMERIC(38,22)   ENCODE az64
+	,des_smsec VARCHAR(256)   ENCODE lzo
+	,des_smsec2 VARCHAR(256)   ENCODE lzo
+	,cod_secgroup VARCHAR(256)   ENCODE lzo
+	,cod_sectype VARCHAR(256)   ENCODE lzo
+	,per_ytm NUMERIC(38,22)   ENCODE az64
+	,per_ytw NUMERIC(38,22)   ENCODE az64
+	,num_effdur NUMERIC(38,22)   ENCODE az64
+	,cod_acccode VARCHAR(20)   ENCODE lzo
+	,nam_class VARCHAR(100)   ENCODE lzo
+	,cod_fundaladdin VARCHAR(256)   ENCODE lzo
+)
+DISTSTYLE AUTO
+;
