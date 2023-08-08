@@ -1,44 +1,40 @@
-CREATE TABLE IF NOT EXISTS sam_dwh.dwh_sam_pos_tb_mm_fac_posglo
-(
-	id_scdtable BIGINT NOT NULL DEFAULT "identity"(1761554, 0, ('0,1'::character varying)::text) ENCODE az64
-	,dat_scdstart DATE   ENCODE az64
-	,dat_scdend DATE   ENCODE az64
-	,flg_scdactive BOOLEAN   ENCODE RAW
-	,cod_currency VARCHAR(256)   ENCODE lzo
-	,cod_cusip VARCHAR(256)   ENCODE lzo
-	,cod_isin VARCHAR(256)   ENCODE lzo
-	,dat_maturity VARCHAR(256)   ENCODE lzo
-	,des_optiondelta VARCHAR(256)   ENCODE lzo
-	,cod_portfolio VARCHAR(256)   ENCODE lzo
-	,nam_portfoliofullname VARCHAR(256)   ENCODE lzo
-	,cod_portfbasecurrency VARCHAR(256)   ENCODE lzo
-	,num_origface NUMERIC(38,22)   ENCODE az64
-	,imp_price NUMERIC(38,22)   ENCODE az64
-	,imp_mktvalue NUMERIC(38,22)   ENCODE az64
-	,per_nav NUMERIC(38,22)   ENCODE az64
-	,imp_notional NUMERIC(38,22)   ENCODE az64
-	,per_notl NUMERIC(38,22)   ENCODE az64
-	,per_fxrate NUMERIC(38,22)   ENCODE az64
-	,des_smsec VARCHAR(256)   ENCODE lzo
-	,des_smsec2 VARCHAR(256)   ENCODE lzo
-	,cod_sedol VARCHAR(256)   ENCODE lzo
-	,cod_secgroup VARCHAR(256)   ENCODE lzo
-	,cod_sectype VARCHAR(256)   ENCODE lzo
-	,cod_ticker VARCHAR(256)   ENCODE lzo
-	,cod_country VARCHAR(256)   ENCODE lzo
-	,per_ytm NUMERIC(38,22)   ENCODE az64
-	,per_ytw NUMERIC(38,22)   ENCODE az64
-	,num_effdur NUMERIC(38,22)   ENCODE az64
-	,des_sustinv VARCHAR(256)   ENCODE lzo
-	,per_tottaxalign NUMERIC(38,22)   ENCODE az64
-	,cod_fundaladdin VARCHAR(256)   ENCODE lzo
-	,dat_fact VARCHAR(50)   ENCODE lzo
-	,dat_crea DATE   ENCODE az64
-	,dat_modi DATE   ENCODE az64
-	,dat_insertion TIMESTAMP WITHOUT TIME ZONE   ENCODE az64
-	,id_ejecucion_fw INTEGER   ENCODE az64
-	,PRIMARY KEY (id_scdtable)
-)
-DISTSTYLE AUTO
- DISTKEY (id_scdtable)
-;
+CREATE TABLE IF NOT EXISTS sam_dwh.dwh_sam_pos_tb_mm_fac_posglo (
+    id_scdtable BIGINT NOT NULL AUTO_INCREMENT,
+    dat_scdstart DATE,
+    dat_scdend DATE,
+    flg_scdactive BOOLEAN,
+    cod_currency VARCHAR(256),
+    cod_cusip VARCHAR(256),
+    cod_isin VARCHAR(256),
+    dat_maturity VARCHAR(256),
+    des_optiondelta VARCHAR(256),
+    cod_portfolio VARCHAR(256),
+    nam_portfoliofullname VARCHAR(256),
+    cod_portfbasecurrency VARCHAR(256),
+    num_origface DECIMAL(38, 22),
+    imp_price DECIMAL(38, 22),
+    imp_mktvalue DECIMAL(38, 22),
+    per_nav DECIMAL(38, 22),
+    imp_notional DECIMAL(38, 22),
+    per_notl DECIMAL(38, 22),
+    per_fxrate DECIMAL(38, 22),
+    des_smsec VARCHAR(256),
+    des_smsec2 VARCHAR(256),
+    cod_sedol VARCHAR(256),
+    cod_secgroup VARCHAR(256),
+    cod_sectype VARCHAR(256),
+    cod_ticker VARCHAR(256),
+    cod_country VARCHAR(256),
+    per_ytm DECIMAL(38, 22),
+    per_ytw DECIMAL(38, 22),
+    num_effdur DECIMAL(38, 22),
+    des_sustinv VARCHAR(256),
+    per_tottaxalign DECIMAL(38, 22),
+    cod_fundaladdin VARCHAR(256),
+    dat_fact VARCHAR(50),
+    dat_crea DATE,
+    dat_modi DATE,
+    dat_insertion TIMESTAMP,
+    id_ejecucion_fw INT,
+    PRIMARY KEY (id_scdtable)
+) ENGINE = InnoDB;
