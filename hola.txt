@@ -1,35 +1,8 @@
-Java was started but returned exit code= 13
-C:\Program Files (X86)\Common Files\Oracle\Java\javapath\javaw .exe
--Xms512m
--Xmx1536m
--Dfile.encoding =UTF-8
--Dosgi.requiredJavaVersion= 1.8
--XX:-UseG1 GC
--XX:   UseStringDeduplication
--XX:MaxMetaspaceS ze=512m
--jar
-C:\Users\x982454\App0ata\Local\Talend\plugins\org.eclipse.equinox.lau ncher_1.5.200.v20180922-1751.jar
--os win32
--ws win32
--arch x86_64
--showsplash
--launcher
-C:\Users\x982454\App0ata\Local\Talend\Talend-Studio -win-x86_64. exe
--name  Talend-Studio-win-x86_64
---launcher.library
-"C:\Users\x982454\App0ata\Local\Talend\plugins\org.eclipse.equinox.lau ncher.win32.win32.x86_64_  1.1.900.v2,01&0922-1751\eclipse_1801.dll"
--startup
-C:\Users\x982454\App0ata\Local\Talend\plugins\org.eclipse.equinox.lau ncher_  1.5.200.v20180922-1751.jar
---launcher.overrideVmargs
--exitdata 2fec_ dc
--vm C:\Program Files (X86)\Common Files\Oracle\Java\javapath\javaw.exe
 -vmargs
 -Xms512m
 -Xmx1536m
 -Dfile.encoding=UTF-8
--Dosgi.requiredJavaVersion= 1.8
--XX:•UseG1GC
--XX:  -UseStringDeduplication
--XX:MaxMetas paceSize= 512m
--jar
-C:\Users\x982454\AppData \Local\Talend\plugins\org.eclipse.equinox.lau ncher_1.S.200.v20180922-1751.jar
+-Dosgi.requiredJavaVersion=1.8
+-XX:+UseG1GC
+-XX:+UseStringDeduplication
+-XX:MaxMetaspaceSize=512m
