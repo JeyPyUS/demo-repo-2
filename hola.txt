@@ -1,8 +1,4 @@
--vmargs
--Xms512m
--Xmx1536m
--Dfile.encoding=UTF-8
--Dosgi.requiredJavaVersion=1.8
--XX:+UseG1GC
--XX:+UseStringDeduplication
--XX:MaxMetaspaceSize=512m
+Execution failed : java.lang.Exception: Job was not built successfully, please check the logs for more details available on C:/Users/x982454/AppData/Local/Talend/workspace/SAM_INFINITY_FIII_BRASIL/poms/jobs/process/job_sam_infinity_fiii_brasil_prod_9.5/lastGenerated.log
+
+[Job was not built successfully, please check the logs for more details available on C:/Users/x982454/AppData/Local/Talend/workspace/SAM_INFINITY_FIII_BRASIL/poms/jobs/process/job_sam_infinity_fiii_brasil_prod_9.5/lastGenerated.log
+]
