@@ -1,4 +1,13 @@
-Execution failed : java.lang.Exception: Job was not built successfully, please check the logs for more details available on C:/Users/x982454/AppData/Local/Talend/workspace/SAM_INFINITY_FIII_BRASIL/poms/jobs/process/job_sam_infinity_fiii_brasil_prod_9.5/lastGenerated.log
+Actualmente estoy fuera de oficina, estaré de vuelta el 28 de agosto.
 
-[Job was not built successfully, please check the logs for more details available on C:/Users/x982454/AppData/Local/Talend/workspace/SAM_INFINITY_FIII_BRASIL/poms/jobs/process/job_sam_infinity_fiii_brasil_prod_9.5/lastGenerated.log
-]
+Para cualquier tema urgente puedes contactar a  Tomas Lebkowski Jimenez en tomas.lebkowski@servexternos.gruposantander.com.
+De lo contrario, te responderé a mi regreso lo antes posible.
+
+¡Gracias!
+-----------------------------------------------------------------------------------------------------------
+I'm currently out of the office, I'll be back on August 28.
+
+For any urgent issue you can contact Tomas Lebkowski Jimenez at tomas.lebkowski@servexternos.gruposantander.com.
+Otherwise, I'll respond your message as soon as possible upon my return.
+
+Thank you!
