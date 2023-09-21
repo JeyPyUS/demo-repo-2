@@ -1,1 +1,1 @@
-commercial_sheet["statistics"]["class"]["volatility"] = json.loads(json_statistics_filtered)[0].get('volatility')
+classinfinity_codes_0_year = df_check_ret_dates[df_check_ret_dates['calc_years'] == 0]['classinfinity_code'].values.tolist()
