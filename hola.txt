@@ -1,1 +1,1 @@
-classinfinity_codes_0_year = df_check_ret_dates[df_check_ret_dates['calc_years'] == 0]['classinfinity_code'].values.tolist()
+classinfinity_codes = [x.strip() for x in cfg_general['classinfinity_codes'].split(",")] if cfg_general['classinfinity_codes'] else []
