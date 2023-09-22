@@ -1,1 +1,1 @@
-classinfinity_codes = [x.strip() for x in cfg_general['classinfinity_codes'].split(",")] if cfg_general['classinfinity_codes'] else []
+f_max_draw_down_3_year_filtered_classinfinity_code = df_max_draw_down_3_year[df_max_draw_down_3_year['classinfinity_code'] == classinfinity_code]
