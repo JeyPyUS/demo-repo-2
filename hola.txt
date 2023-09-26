@@ -1,7 +1,2 @@
-# Checking the BBDD connection
-    try:
-        with engine_redshift.connect() as connection:
-            pass
-    except Exception as e:
-        logger.error(f'Script ended due to an error with BBDD connection. Error: {e}')
-        return False
+for row in df_names.to_dict(orient='records'):
+    list_df_names.append(row)
