@@ -1,1 +1,1 @@
-df_dss['dat_expiration'].apply(lambda x: datetime.strptime(str(x), '%d/%m/%Y').date() if check_string_is_date(str(x)) else None)
+xml_languages = [x.strip() for x in cfg_xml['languages'].split(',')]
