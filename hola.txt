@@ -1,2 +1,1 @@
-for row in df_names.to_dict(orient='records'):
-    list_df_names.append(row)
+df_dss['dat_expiration'].apply(lambda x: datetime.strptime(str(x), '%d/%m/%Y').date() if check_string_is_date(str(x)) else None)
