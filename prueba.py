@@ -1,20 +1,36 @@
+import sys
 from datetime import datetime
+from io import StringIO
+
+import boto3
+import pandas as pd
+from sqlalchemy import create_engine
+import inspect
+
+con_db_ar = create_engine(sys.argv[1])
+con_db_fw = create_engine(sys.argv[2])
+schema_fw = sys.argv[3]
+id_proyecto = sys.argv[4]
+bucket = sys.argv[5]
+folder_s3 = sys.argv[6]
 
 
-ahora = datetime.now()
+def get_data_query(query: str, is_fw=False, conexion_ar=con_db_ar, conexion_fw=con_db_fw):
+    """
+    Consulta de un select sobre una base de datos
 
-print(f"\nAño => {ahora.year}")
-print(f"Mes => {ahora.month:02}")
-print(f"Día => {ahora.day:02}")
+    Parameters:
+        query(str): Texto con el select a realizar
+        is_fw(boolean): Si debe ejecutarse en las tablas del FW o en RedShift
+        conexion_redshift: Conexion a RedShift
+        conexion_fw: Conexion al framework
 
-print("\ndd/mm/yy hh:mm:ss\n"\
-      "{0:02}/{1:02}/{2} {3:02}:{4:02}:{5:02}\n"\
-        .format(ahora.day, ahora.month, ahora.year,
-                ahora.hour % 12, ahora.minute, ahora.second))
+    Returns:
+        _(DataFrame): Devuelve el DataFrame de respuesta a la consulta
+    """
+    if is_fw:
+        conexion = conexion_fw
+    else:
+        conexion = conexion_ar
 
-if (ahora.second % 2):
-    print("\n\tSEGUNDO IMPAR!! D:\n")
-    print(f"{ahora.second} % 2 = {ahora.second % 2}")
-else:
-    print("\n\tSEGUNDO PAR!! :D\n")
-    print(f"{ahora.second} % 2 = {ahora.second % 2}")
+    return pd.read_sql(query, conexion)
