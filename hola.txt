@@ -1,9 +1,20 @@
-def crear_diccionario(clases):
-    '''
-    Creación de diccionario
-    '''
-    for c in clases:
-      dict_class[c] = []
-    for count, row in enumerate(df_input.cod_bmk.values):
-      dict_class[row].append(count)
-    return dict_class
+def execute_query(query: str, is_fw=False, conexion_ar=con_db_ar, conexion_fw=con_db_fw, autocommit=True):
+    """
+    Ejecuta una query sobre una base de datos y su respectivo commit
+
+    Parameters:
+        query(str): Texto con la query a realizar
+        is_fw(boolean): Si debe ejecutarse en las tablas del FW o en RedShift
+        conexion_redshift: Conexion a RedShift
+        conexion_fw: Conexion al framework
+    """
+    if is_fw:
+        conexion = conexion_fw
+    else:
+        conexion = conexion_ar
+
+    str_commit = ""
+    if autocommit:
+        str_commit = "commit"
+
+    conexion.execute(f"{query}; {str_commit};")
