@@ -1,1 +1,11 @@
-https://teams.microsoft.com/l/meetup-join/19%3ameeting_ZDUyNDU2YmItNTQ4ZS00NDJiLWIwZDMtMGQ1ZjgyODcwMTBi%40thread.v2/0?context=%7b%22Tid%22%3a%2235595a02-4d6d-44ac-99e1-f9ab4cd872db%22%2c%22Oid%22%3a%224cc5320a-c807-46b1-8df9-651e34804c4a%22%7d
+SELECT
+    s.cd_job,
+    f.cd_filesystem
+FROM
+    fw_etl_dev.fw_dim_subprocesos s
+JOIN
+    fw_etl_dev.fw_ingesta_ficheros f
+ON
+    s.cd_job = f.cd_job
+WHERE
+    s.id_proyecto = 24;
