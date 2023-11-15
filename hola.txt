@@ -1,1 +1,1 @@
-xml_languages = [x.strip() for x in cfg_xml['languages'].split(',')]
+Antes de investir, consulte os documentos do fundo, que podem ser encontrados no site www.santander.com.br > Produtos e ServiÃ§os> Investimentos e previdÃªncia > Fundos de Investimento > Saiba Mais > Documentos Legais > Consulte aqui seus documentos. A descriÃ§Ã£o do Tipo Anbima estÃ¡ disponÃ­vel neste documento.
