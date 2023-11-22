@@ -1,51 +1,24 @@
-def calculate_max_draw_down(df):
-    '''
-    Método auxiliar para el cálculo de Max Draw Down
-    MainDrawDown = (main_min / main_max) - 1
-    PrevDrawDown = (prev_min / prev_max) - 1
-    Max Draw Down = Higher value between MainDrawDown and PrevDrawDown
-    '''
-
-    res_tuple = None
-
-    classinfinity_code = df.loc[df['return'].idxmax()]['classinfinity_code']
-    cod_fundinfinity = df.loc[df['return'].idxmax()]['cod_fundinfinity']
-    main_max = df.loc[df['return'].idxmax()]['return']
-
-    dat_fact_main_max = df.loc[df['return'].idxmax()]['dat_fact']
-
-    df_main_min = df[(df['dat_fact'] >= dat_fact_main_max)]
-
-    main_min = df_main_min.loc[df_main_min['return'].idxmin()]['return']
-
-    df_prev_min = df[(df['dat_fact'] <= dat_fact_main_max)]
-
-    prev_min = None
-    if not df_prev_min.empty:
-        prev_min = df_prev_min.loc[df_prev_min['return'].idxmin()]['return']
-
-        dat_fact_prev_min = df_prev_min.loc[df_prev_min['return'].idxmin()]['dat_fact']
-
-        df_prev_max = df[(df['dat_fact'] <= dat_fact_prev_min)]
-
-        prev_max = None
-        if not df_prev_max.empty:
-            prev_max = df_prev_max.loc[df_prev_max['return'].idxmax()]['return']
-
-    max_draw_down = 0
-    if main_max and main_min:
-        if prev_min and prev_max:
-            if main_max != 0 and prev_max != 0:
-                main_draw_down = (main_min / main_max) - 1
-                prev_draw_down = (prev_min / prev_max) - 1
-
-                max_draw_down = main_draw_down if main_draw_down < prev_draw_down else prev_draw_down
-
-        else:
-            if main_max != 0:
-                main_draw_down = (main_min / main_max) - 1
-
-    if classinfinity_code and cod_fundinfinity:
-        res_tuple = (classinfinity_code,cod_fundinfinity,max_draw_down)
-
-    return res_tuple
+[FATAL] 15:53:52 sam_infinity_fiii_brasil.job_fw_master_ingesta_tf_csv_s3_comillas_0_2.job_fw_master_ingesta_tf_csv_s3_comillas- tJava_2 null
+java.lang.NullPointerException: null
+	at sam_infinity_fiii_brasil.job_fw_master_ingesta_tf_csv_s3_comillas_0_2.job_fw_master_ingesta_tf_csv_s3_comillas.tJava_2Process(job_fw_master_ingesta_tf_csv_s3_comillas.java:22973) [job_fw_master_ingesta_tf_csv_s3_comillas_0_2.jar:?]
+	at sam_infinity_fiii_brasil.job_fw_master_ingesta_tf_csv_s3_comillas_0_2.job_fw_master_ingesta_tf_csv_s3_comillas.tPostjob_1Process(job_fw_master_ingesta_tf_csv_s3_comillas.java:22838) [job_fw_master_ingesta_tf_csv_s3_comillas_0_2.jar:?]
+	at sam_infinity_fiii_brasil.job_fw_master_ingesta_tf_csv_s3_comillas_0_2.job_fw_master_ingesta_tf_csv_s3_comillas.runJobInTOS(job_fw_master_ingesta_tf_csv_s3_comillas.java:25022) [job_fw_master_ingesta_tf_csv_s3_comillas_0_2.jar:?]
+	at sam_infinity_fiii_brasil.job_fw_master_ingesta_tf_csv_s3_comillas_0_2.job_fw_master_ingesta_tf_csv_s3_comillas.runJob(job_fw_master_ingesta_tf_csv_s3_comillas.java:24039) [job_fw_master_ingesta_tf_csv_s3_comillas_0_2.jar:?]
+	at sam_infinity_fiii_brasil.job_sam_ext_brasil_basepam_2_0.job_sam_ext_brasil_basepam.tRunJob_4Process(job_sam_ext_brasil_basepam.java:2682) [job_sam_ext_brasil_basepam_2_0.jar:?]
+	at sam_infinity_fiii_brasil.job_sam_ext_brasil_basepam_2_0.job_sam_ext_brasil_basepam.tRunJob_3Process(job_sam_ext_brasil_basepam.java:2220) [job_sam_ext_brasil_basepam_2_0.jar:?]
+	at sam_infinity_fiii_brasil.job_sam_ext_brasil_basepam_2_0.job_sam_ext_brasil_basepam.tJava_2Process(job_sam_ext_brasil_basepam.java:1666) [job_sam_ext_brasil_basepam_2_0.jar:?]
+	at sam_infinity_fiii_brasil.job_sam_ext_brasil_basepam_2_0.job_sam_ext_brasil_basepam.runJobInTOS(job_sam_ext_brasil_basepam.java:8030) [job_sam_ext_brasil_basepam_2_0.jar:?]
+	at sam_infinity_fiii_brasil.job_sam_ext_brasil_basepam_2_0.job_sam_ext_brasil_basepam.runJob(job_sam_ext_brasil_basepam.java:7232) [job_sam_ext_brasil_basepam_2_0.jar:?]
+	at sam_infinity_fiii_brasil.job_sam_ext_brasil_main_2_0.job_sam_ext_brasil_main.tRunJob_4Process(job_sam_ext_brasil_main.java:3178) [job_sam_ext_brasil_main_2_0.jar:?]
+	at sam_infinity_fiii_brasil.job_sam_ext_brasil_main_2_0.job_sam_ext_brasil_main.tJava_2Process(job_sam_ext_brasil_main.java:2717) [job_sam_ext_brasil_main_2_0.jar:?]
+	at sam_infinity_fiii_brasil.job_sam_ext_brasil_main_2_0.job_sam_ext_brasil_main.runJobInTOS(job_sam_ext_brasil_main.java:9139) [job_sam_ext_brasil_main_2_0.jar:?]
+	at sam_infinity_fiii_brasil.job_sam_ext_brasil_main_2_0.job_sam_ext_brasil_main.runJob(job_sam_ext_brasil_main.java:8341) [job_sam_ext_brasil_main_2_0.jar:?]
+	at sam_infinity_fiii_brasil.job_sam_ext_main_0_3.job_sam_ext_main.tRunJob_11Process(job_sam_ext_main.java:4238) [job_sam_ext_main_0_3.jar:?]
+	at sam_infinity_fiii_brasil.job_sam_ext_main_0_3.job_sam_ext_main.tJava_3Process(job_sam_ext_main.java:2722) [job_sam_ext_main_0_3.jar:?]
+	at sam_infinity_fiii_brasil.job_sam_ext_main_0_3.job_sam_ext_main.runJobInTOS(job_sam_ext_main.java:6023) [job_sam_ext_main_0_3.jar:?]
+	at sam_infinity_fiii_brasil.job_sam_ext_main_0_3.job_sam_ext_main.runJob(job_sam_ext_main.java:4896) [job_sam_ext_main_0_3.jar:?]
+	at sam_infinity_fiii_brasil.job_sam_infinity_fiii_brasil_prod_9_5.job_sam_infinity_fiii_brasil_PROD.tRunJob_2Process(job_sam_infinity_fiii_brasil_PROD.java:3023) [job_sam_infinity_fiii_brasil_prod_9_5.jar:?]
+	at sam_infinity_fiii_brasil.job_sam_infinity_fiii_brasil_prod_9_5.job_sam_infinity_fiii_brasil_PROD.tRunJob_1Process(job_sam_infinity_fiii_brasil_PROD.java:2466) [job_sam_infinity_fiii_brasil_prod_9_5.jar:?]
+	at sam_infinity_fiii_brasil.job_sam_infinity_fiii_brasil_prod_9_5.job_sam_infinity_fiii_brasil_PROD.runJobInTOS(job_sam_infinity_fiii_brasil_PROD.java:6820) [job_sam_infinity_fiii_brasil_prod_9_5.jar:?]
+	at sam_infinity_fiii_brasil.job_sam_infinity_fiii_brasil_prod_9_5.job_sam_infinity_fiii_brasil_PROD.main(job_sam_infinity_fiii_brasil_PROD.java:5800) [job_sam_infinity_fiii_brasil_prod_9_5.jar:?]
+..........SPR: ENTRA EN ERROR tLogCather
