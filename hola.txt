@@ -1,17 +1,1 @@
-def check_clarity(schema=schema_fw, conexion=con_db_AR):
-    """
-    Comprueba si existe algun proyecto de Clarity activo
-
-    Args:
-        schema (str, optional): Esquema de base de datos. Defaults to current_env_sch.
-        conexion (engine, optional): Engine de conexion. Defaults to con_db_ar.
-
-    Raises:
-        ValueError: Existe al menos un proyecto de Clarity activo
-    """
-    query_cla = (f"select * from {schema}.fw_ejecuciones where id_proyecto in "
-                f"(select id_proyecto from {schema}.fw_dim_proyectos where cd_proyecto like '%%CLARITY%%')"
-                "and id_fecha_ejecucion_fin is null")
-
-    if len(get_data_query(query_cla, is_fw=True))!=0:
-        raise ValueError("El proyecto Clarity esta activo")
+[FATAL] 11:23:02 infinity.job_netzero_etl_0_1.job_netzero_etl- tSystem_1 Cannot run program "/bin/bash" (in directory "\"): CreateProcess error=2, El sistema no puede encontrar el archivo especificado
