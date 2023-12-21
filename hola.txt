@@ -1,19 +1,51 @@
-def get_data_query(query: str, is_fw=False, conexion_ar=con_db_AR, conexion_fw=con_db_FW):
-    """
-    Consulta de un select sobre una base de datos
+import pytest
+import pandas as pd
 
-    Parameters:
-        query(str): Texto con el select a realizar
-        is_fw(boolean): Si debe ejecutarse en las tablas del FW o en RedShift
-        conexion_redshift: Conexion a RedShift
-        conexion_fw: Conexion al framework
+def test_check_clarity(mocker):
+    mocker.patch('sys.argv', ['customratings_etl.py', 'bucket_name', 'folder', 'pattern_interfaz', 'pattern_param',
+                              'pattern_ovr', '3 + 8', 'schema_fw', 'con_db_AR', 'con_db_FW', '33', 'processed_folder', 
+                              'name_bucket'])
+    mocker.patch('sqlalchemy.create_engine', side_effect=['con_db_AR', 'con_db_FW'])
+    import src.customratings_etl as etl
 
-    Returns:
-        _(DataFrame): Devuelve el DataFrame de respuesta a la consulta
-    """
-    if is_fw:
-        conexion = conexion_fw
-    else:
-        conexion = conexion_ar
+    test_df = pd.DataFrame({'hola': ['adios']})
 
-    return pd.read_sql(query, conexion)
+    mocker.patch('src.customratings_etl.get_data_query', return_value=test_df)
+
+    with pytest.raises(ValueError, match="El proyecto Clarity esta activo"):
+        etl.check_clarity(schema='schema_fw', conexion='con_db_AR')
+
+
+def test_get_id_ejecucion(mocker):
+    mocker.patch('sys.argv', ['customratings_etl.py', 'bucket_name', 'folder', 'pattern_interfaz', 'pattern_param',
+                              'pattern_ovr', '3 + 8', 'schema_fw', 'con_db_AR', 'con_db_FW', '33', 'processed_folder', 
+                              'name_bucket'])
+    mocker.patch('sqlalchemy.create_engine', side_effect=['con_db_AR', 'con_db_FW'])
+    import src.customratings_etl as etl
+
+    empty_df = pd.DataFrame()
+    test_df = pd.DataFrame({'id_ejecucion': ['123', '456']})
+
+    mocker.patch('src.customratings_etl.get_data_query', side_effect=[empty_df, test_df])
+    mocker.patch('src.customratings_etl.execute_query', side_effect=None)
+
+    result = etl.get_id_ejecucion('1234', schema='schema_fw')
+
+    assert result == '123'
+
+
+def tast_get_data_query_with_is_fw(mocker):
+    mocker.patch('sys.argv', ['customratings_etl.py', 'bucket_name', 'folder', 'pattern_interfaz', 'pattern_param',
+                              'pattern_ovr', '3 + 8', 'schema_fw', 'con_db_AR', 'con_db_FW', '33', 'processed_folder', 
+                              'name_bucket'])
+    mocker.patch('sqlalchemy.create_engine', side_effect=['con_db_AR', 'con_db_FW'])
+    import src.customratings_etl as etl
+
+    test_df = pd.DataFrame({'col1': [1, 2]})
+    test_query = 'Query'
+
+    mocker.patch('pd.read_sql', return_value=test_df)
+
+    result = etl.get_data_query(test_query, is_fw=True, conexion_ar='con_db_ar', conexion_fw='con_db_fw')
+
+    pd.testing.assert_frame_equal(result, test_df)
