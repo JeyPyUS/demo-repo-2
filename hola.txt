@@ -1,13 +1,9 @@
-def write_log(log: str, id_ej: int) -> None:
-    """
-    Escritura en el fichero de log
+{'rating_tipo 1': [['ENTRE', 55.01, 65.0], ['ENTRE', 65.01, 80.0], ['ENTRE', 80.01, 100.0]], 'rating_tipo 2': [['<', 10.0, nan], ['ENTRE', 10.0, 20.0], ['ENTRE', 20.01, 50.0], ['>=', 50.01, nan]]}
 
-    Parameters:
-        log (str): Mensaje que debe ser escrito
-        id_ej (int): Numero de la ejecucion actual
-    """
-    timestamp = datetime.now().strftime("%d-%m-%Y (%H:%M:%S)")
-    full_path = sys.argv[0]
-    path = full_path[:full_path.rfind("/")]
-    with open(f'{path}/log_{id_ej}.txt', 'a') as f:
-        f.write(f"[{timestamp}] - {log}\n")
+{'rating_tipo 1': [['ENTRE', 55.01, 65.0], ['ENTRE', 65.01, 80.0], ['ENTRE', 80.01, 100.0]], 'rating_tipo 2': [['<', 10.0, nan], ['ENTRE', 10.0, 20.0], ['ENTRE', 20.01, 50.0], ['>=', 50.01, nan]]}
+
+AssertionError: assert {'rating_tipo... 50.01, nan]]} == {'rating_tipo... 50.01, nan]]}
+E         Omitting 1 identical items, use -vv to show
+E         Differing items:
+E         {'rating_tipo 2': [['<', 10.0, nan], ['ENTRE', 10.0, 20.0], ['ENTRE', 20.01, 50.0], ['>=', 50.01, nan]]} != {'rating_tipo 2': [['<', 10.0, nan], ['ENTRE', 10.0, 20.0], ['ENTRE', 20.01, 50.0], ['>=', 50.01, nan]]}
+E         Use -v to get more diff
