@@ -1,8 +1,17 @@
-def API_post(url, json, api_key, obj_auth):
-    dict_headers = {"VND.com.blackrock.Request-ID": str(uuid.uuid4()),
-                    "VND.com.blackrock.Origin-Timestamp": str(
-                    datetime.utcnow().replace(microsecond=0).astimezone().isoformat()),
-                    "VND.com.blackrock.API-Key": api_key}
+def send_data_API(df_in, cont, gap, url, api_key, user_pass, id_ejecucion):
+    output = df_in[cont:cont+gap]
+    output._is_copy = False
+    str_output = str(output.to_dict("records")).replace("'",'"')
+    status = API_post(url, str_output, api_key, user_pass)
 
-    ans = requests.post(url=url, data=json,  headers=dict_headers, auth=obj_auth)
-    return ans.text
+    if "error" in status:
+        status_code = 400
+    elif "identifier" in status:
+        status_code = 200
+    else:
+        status_code = -999
+    output["status"] = status_code
+    write_log(status_code, id_ejecucion)
+    write_log(status, id_ejecucion)
+
+    return output
