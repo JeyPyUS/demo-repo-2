@@ -1,9 +1,8 @@
-{'rating_tipo 1': [['ENTRE', 55.01, 65.0], ['ENTRE', 65.01, 80.0], ['ENTRE', 80.01, 100.0]], 'rating_tipo 2': [['<', 10.0, nan], ['ENTRE', 10.0, 20.0], ['ENTRE', 20.01, 50.0], ['>=', 50.01, nan]]}
+def API_post(url, json, api_key, obj_auth):
+    dict_headers = {"VND.com.blackrock.Request-ID": str(uuid.uuid4()),
+                    "VND.com.blackrock.Origin-Timestamp": str(
+                    datetime.utcnow().replace(microsecond=0).astimezone().isoformat()),
+                    "VND.com.blackrock.API-Key": api_key}
 
-{'rating_tipo 1': [['ENTRE', 55.01, 65.0], ['ENTRE', 65.01, 80.0], ['ENTRE', 80.01, 100.0]], 'rating_tipo 2': [['<', 10.0, nan], ['ENTRE', 10.0, 20.0], ['ENTRE', 20.01, 50.0], ['>=', 50.01, nan]]}
-
-AssertionError: assert {'rating_tipo... 50.01, nan]]} == {'rating_tipo... 50.01, nan]]}
-E         Omitting 1 identical items, use -vv to show
-E         Differing items:
-E         {'rating_tipo 2': [['<', 10.0, nan], ['ENTRE', 10.0, 20.0], ['ENTRE', 20.01, 50.0], ['>=', 50.01, nan]]} != {'rating_tipo 2': [['<', 10.0, nan], ['ENTRE', 10.0, 20.0], ['ENTRE', 20.01, 50.0], ['>=', 50.01, nan]]}
-E         Use -v to get more diff
+    ans = requests.post(url=url, data=json,  headers=dict_headers, auth=obj_auth)
+    return ans.text
