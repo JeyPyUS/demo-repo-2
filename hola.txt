@@ -1,12 +1,28 @@
-def handle_error(error, id_ej):
-    funcion = inspect.trace()[-1][3]
-    error = str(error).replace("'", "")[:950]
-    err_msg = f"{error} [{funcion}]"
-    # Update FW
-    q_update_fw = (
-        f"update {schema_fw}.fw_ejecuciones set id_fecha_ejecucion_fin=current_timestamp, id_estado_ejecucion=1,"
-        f"ds_observaciones='{err_msg}' where id_ejecucion={id_ej}")
-    execute_query(q_update_fw, is_fw=True)
-    write_log(f"¡Error terminal! {err_msg}", id_ej)
-    #upload_log(id_ejecucion, delete_after=True)
-    exit()
+# Configuramos los parámetros posibles que pueden llegar en la llamada del script
+parser = argparse.ArgumentParser()
+parser.add_argument('--config_file', help='Fichero de configuración que será usado', type=str)
+parser.add_argument('--verbosity', help='Nivel de LOG que será usado', type=str)
+parser.add_argument('-env', '--environment', dest='environment',
+                    choices=['development', 'production', 'development_LZ', 'preproduction_LZ', 'production_LZ'],
+                    help='Entorno donde el script será ejecutado. Por defecto: %(default)s', type=str,
+                    default=DEFAULT_ENVIRONMENT)
+
+# Recogemos los parámetros que hayan podido llegar en la llamada del script
+args = parser.parse_args()
+kwargs = {}
+for arg in vars(args):
+    if getattr(args, arg) != None:
+        kwargs[arg] = getattr(args, arg)
+
+# Recoger entorno de ejecución
+environment = kwargs['environment'] if 'environment' in kwargs else DEFAULT_ENVIRONMENT
+
+# Recogiendo la configuración alojada en Common para conexión a Redshift
+conn_redshift_dict = cfg.read_section(section='redshift_infinity_' + environment)
+
+# Creando la conexión con la base de datos de Infinity
+engine = db_utils.get_engine_redshift(conn_redshift_dict)
+
+# Recoger fichero de configuración de los parámetros si hubiera alguno, sino será el valor de
+# CONFIG_FILE el que se use por defecto
+configuration_file = kwargs['config_file'] if 'config_file' in kwargs else DEFAULT_CONFIG_FILE
