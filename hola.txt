@@ -1,82 +1,15 @@
-import numpy as np
-import pandas as pd
-from sqlalchemy import create_engine
-import sys
-import threading
-from calculoserie_utils import crear_diccionario, calculo_serie
+self = <MagicMock name='read_sql_query' id='1793416386128'>
+args = ("select dat_fact, cod_classinfinity, per_returnday from tmp_sam_per_calculorentabilidades_2_new where cod_classinfinity in ('clase2');", 's')
+kwargs = {}, effect = <list_iterator object at 0x000001A18FEE7310>
 
-salto = int(sys.argv[1])
-num_hilos = int(sys.argv[2])
-str_conexion = str(sys.argv[3])
-path_csv = str(sys.argv[4])
-
-#Conexion a la base de datos
-con_db = create_engine(str_conexion)
-
-#Creamos el dataframe con todas las clases
-df_clases = pd.read_sql_query("select distinct cod_classinfinity from tmp_sam_per_calculorentabilidades_2_new;",con_db)
-if(len(df_clases) == 0):
-    print("FALLO DE EJECUCION: No se han encontrado nuevas clases porque la tabla estaba vacia.")
-    con_db.dispose()
-    exit()
-#Creamos un array de numPy con todas las clases de la tabla
-clases_array = df_clases.cod_classinfinity.to_numpy()
-#print(clases_array)
-
-cont_clases = 0
-start = salto
-tmp_clases = clases_array[:salto]
-
-while True:
-
-    str_clases = "','".join(tmp_clases)
-    query = f"select dat_fact, cod_classinfinity, per_returnday from tmp_sam_per_calculorentabilidades_2_new where cod_classinfinity in ('{str_clases}');"
-    df_input = pd.read_sql_query(query,con_db)
-    df_input = df_input.sort_values(by="dat_fact").reset_index(drop=True)
-
-    #Hacemos la division del DF en los que se necesiten
-    clases = df_input.cod_classinfinity.unique()
-    dict_class = {}
-    dict_class = crear_diccionario(clases, df_input, 'cod_classinfinity')
-
-    num_clases = len(clases)
-    threads = list()
-
-    trabajo = num_clases//num_hilos
-    resto = num_clases%num_hilos
-    inicio = 0
-    final = trabajo - 1
-
-    for i in range(num_hilos):
-
-      if i == 0:
-        inicio = 0
-        final = trabajo -1
-        if(resto > 0):
-          final = final + 1
-          resto = resto - 1
-      else:
-        inicio = final +1
-        final = final + trabajo
-        if(resto > 0):
-          final = final + 1
-          resto = resto - 1
-
-      #Creacion de los hilos con sus indices
-      t = threading.Thread(target=calculo_serie, args=(df_input,inicio,final, clases, dict_class, path_csv))
-      threads.append(t)
-      t.start()
-
-    for index, thread in enumerate(threads):
-        thread.join()
-
-    if(len(tmp_clases) != salto):
-        break
-
-    tmp_clases = clases_array[start:start+salto]
-    start = start+salto
-
-    if(len(tmp_clases) == 0):
-        break
-
-con_db.dispose()
+    def _execute_mock_call(self, /, *args, **kwargs):
+        # separate from _increment_mock_call so that awaited functions are
+        # executed separately from their call, also AsyncMock overrides this method
+    
+        effect = self.side_effect
+        if effect is not None:
+            if _is_exception(effect):
+                raise effect
+            elif not _callable(effect):
+>               result = next(effect)
+E               StopIteration
