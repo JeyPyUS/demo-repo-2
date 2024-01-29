@@ -1,15 +1,11 @@
-self = <MagicMock name='read_sql_query' id='1793416386128'>
-args = ("select dat_fact, cod_classinfinity, per_returnday from tmp_sam_per_calculorentabilidades_2_new where cod_classinfinity in ('clase2');", 's')
-kwargs = {}, effect = <list_iterator object at 0x000001A18FEE7310>
+c:\Users\x982454\Documents\Proyectos_Santander\Repos\wmi-infinity-python-performance-return-series\test\test_calculoserie_utils.py:20: DeprecationWarning: 
+  Pyarrow will become a required dependency of pandas in the next major release of pandas (pandas 3.0),
+  (to allow more performant data types, such as the Arrow string type, and better interoperability with other libraries)
+  but was not found to be installed on your system.
+  If this would cause problems for you,
+  please provide us feedback at https://github.com/pandas-dev/pandas/issues/54466
+          
+    import pandas as pd
 
-    def _execute_mock_call(self, /, *args, **kwargs):
-        # separate from _increment_mock_call so that awaited functions are
-        # executed separately from their call, also AsyncMock overrides this method
-    
-        effect = self.side_effect
-        if effect is not None:
-            if _is_exception(effect):
-                raise effect
-            elif not _callable(effect):
->               result = next(effect)
-E               StopIteration
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+- generated xml file: C:\Users\x982454\AppData\Local\Temp\tmp-16824xDxW9o5kcUto.xml -
