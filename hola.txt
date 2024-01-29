@@ -1,28 +1,82 @@
-# Configuramos los parámetros posibles que pueden llegar en la llamada del script
-parser = argparse.ArgumentParser()
-parser.add_argument('--config_file', help='Fichero de configuración que será usado', type=str)
-parser.add_argument('--verbosity', help='Nivel de LOG que será usado', type=str)
-parser.add_argument('-env', '--environment', dest='environment',
-                    choices=['development', 'production', 'development_LZ', 'preproduction_LZ', 'production_LZ'],
-                    help='Entorno donde el script será ejecutado. Por defecto: %(default)s', type=str,
-                    default=DEFAULT_ENVIRONMENT)
+import numpy as np
+import pandas as pd
+from sqlalchemy import create_engine
+import sys
+import threading
+from calculoserie_utils import crear_diccionario, calculo_serie
 
-# Recogemos los parámetros que hayan podido llegar en la llamada del script
-args = parser.parse_args()
-kwargs = {}
-for arg in vars(args):
-    if getattr(args, arg) != None:
-        kwargs[arg] = getattr(args, arg)
+salto = int(sys.argv[1])
+num_hilos = int(sys.argv[2])
+str_conexion = str(sys.argv[3])
+path_csv = str(sys.argv[4])
 
-# Recoger entorno de ejecución
-environment = kwargs['environment'] if 'environment' in kwargs else DEFAULT_ENVIRONMENT
+#Conexion a la base de datos
+con_db = create_engine(str_conexion)
 
-# Recogiendo la configuración alojada en Common para conexión a Redshift
-conn_redshift_dict = cfg.read_section(section='redshift_infinity_' + environment)
+#Creamos el dataframe con todas las clases
+df_clases = pd.read_sql_query("select distinct cod_classinfinity from tmp_sam_per_calculorentabilidades_2_new;",con_db)
+if(len(df_clases) == 0):
+    print("FALLO DE EJECUCION: No se han encontrado nuevas clases porque la tabla estaba vacia.")
+    con_db.dispose()
+    exit()
+#Creamos un array de numPy con todas las clases de la tabla
+clases_array = df_clases.cod_classinfinity.to_numpy()
+#print(clases_array)
 
-# Creando la conexión con la base de datos de Infinity
-engine = db_utils.get_engine_redshift(conn_redshift_dict)
+cont_clases = 0
+start = salto
+tmp_clases = clases_array[:salto]
 
-# Recoger fichero de configuración de los parámetros si hubiera alguno, sino será el valor de
-# CONFIG_FILE el que se use por defecto
-configuration_file = kwargs['config_file'] if 'config_file' in kwargs else DEFAULT_CONFIG_FILE
+while True:
+
+    str_clases = "','".join(tmp_clases)
+    query = f"select dat_fact, cod_classinfinity, per_returnday from tmp_sam_per_calculorentabilidades_2_new where cod_classinfinity in ('{str_clases}');"
+    df_input = pd.read_sql_query(query,con_db)
+    df_input = df_input.sort_values(by="dat_fact").reset_index(drop=True)
+
+    #Hacemos la division del DF en los que se necesiten
+    clases = df_input.cod_classinfinity.unique()
+    dict_class = {}
+    dict_class = crear_diccionario(clases, df_input, 'cod_classinfinity')
+
+    num_clases = len(clases)
+    threads = list()
+
+    trabajo = num_clases//num_hilos
+    resto = num_clases%num_hilos
+    inicio = 0
+    final = trabajo - 1
+
+    for i in range(num_hilos):
+
+      if i == 0:
+        inicio = 0
+        final = trabajo -1
+        if(resto > 0):
+          final = final + 1
+          resto = resto - 1
+      else:
+        inicio = final +1
+        final = final + trabajo
+        if(resto > 0):
+          final = final + 1
+          resto = resto - 1
+
+      #Creacion de los hilos con sus indices
+      t = threading.Thread(target=calculo_serie, args=(df_input,inicio,final, clases, dict_class, path_csv))
+      threads.append(t)
+      t.start()
+
+    for index, thread in enumerate(threads):
+        thread.join()
+
+    if(len(tmp_clases) != salto):
+        break
+
+    tmp_clases = clases_array[start:start+salto]
+    start = start+salto
+
+    if(len(tmp_clases) == 0):
+        break
+
+con_db.dispose()
