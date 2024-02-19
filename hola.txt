@@ -1,4 +1,44 @@
-fact_dtypes = np.dtype(
+def daq_aladdin_master(arg_dat_fact: str):
+    ################################################################################################
+    ## Descripcion:
+    ##      Contiene las validaciones 008 y 010 del proyecto DAQ que miden la calidad del maestro de emisores Aladdin
+    ################################################################################################
+
+    #####################################################################
+    ## Paso 0:	Se eliminan los datos de la fecha de proceso
+    #####################################################################
+
+    au_fact_table = 'dtm_sam_daq_tb_mm_fac_base'
+    id_dq_todelete = '8,10'
+    where_clause = f"DATE_FORMAT(dat_fact, \'%%Y%%m\') = {arg_dat_fact} and id_dq in ({id_dq_todelete})"
+    str_delete = f"delete from {schema_AU}.{au_fact_table} where {where_clause}"
+    Utils.execute_query_aurora(str_delete)
+
+    #####################################################################
+    ## Paso 1:	Import de datos a uno o varios dfs
+    #####################################################################
+    source_table = 'dwh_sam_cla_tb_mm_dim_issuermaster'
+    source_schema = 'sam_dwh'
+    field_list = 'cod_issueraladdin, nam_issuer, nam_parentcompany'
+    query_str = f"select {field_list} from {source_schema}.{source_table} where flg_scdactive=True;"
+    df_issuer = Utils.get_data_query(query_str)
+
+    #####################################################################
+    ## Paso 1.1:	Actualizamos el total de casos a analizar y volvemos a escribir en la tabla de dimension
+    #####################################################################
+    Utils.insert_validation_row(8, df_issuer.shape[0], arg_dat_fact)
+    Utils.insert_validation_row(10, df_issuer.shape[0], arg_dat_fact)
+
+    #####################################################################
+    ## Paso 2: Columnas calculadas
+    #####################################################################
+
+    # N/A
+
+    #####################################################################
+    ## Paso 3: Crear df vacio de facts  (opt)
+    #####################################################################
+    fact_dtypes = np.dtype(
         [
             ("id_dq", int),
             ("des_key_value1", str),
@@ -13,3 +53,112 @@ fact_dtypes = np.dtype(
         ]
     )
     df_fact = pd.DataFrame(np.empty(0, dtype=fact_dtypes))
+
+    #####################################################################
+    ## Paso 4: Se crea el df con la agrupacion para la validacion 008 y 010
+    #####################################################################
+
+    df_issuer_group = df_issuer.groupby('cod_issueraladdin', as_index=False).agg(
+        {'nam_issuer': 'nunique',
+         'nam_parentcompany': 'nunique'}
+    )
+
+    #####################################################################
+    ## Paso 5: Se crea el df con los casos de validacion 08 (Calculo de casos KO de validacion 008: mismo emisor
+    ## Aladdin con distintas descripciones de emisor)
+    #####################################################################
+    df_daq008 = df_issuer_group[(df_issuer_group['nam_issuer'] > 1)]
+
+    # (print("Caso 8: Existen ", df_daq008.shape[0], " casos"))
+
+    #####################################################################
+    """" Paso 6: Si los resultados son > 0 hacemos lo siguiente:
+            Paso 6.1: Creamos el df con registros para insertar en la FACT
+            Paso 6.2: Insertamos en la FACT
+            Paso 6.3: Creamos el df con los registros de detalle y los insertamos (No siempre aplica este caso)
+    """
+    #####################################################################
+    if df_daq008.shape[0] > 0:
+        ## Paso 6.1: Creamos el df con registros para insertar en la FACT
+        df_temp_fact_008 = pd.merge(df_issuer,
+                                    df_daq008[['cod_issueraladdin']],
+                                    on="cod_issueraladdin", how="inner",
+                                    suffixes=('_A', '_B')
+                                    )
+
+        # Eliminamos columnas insertadas para los cálculos
+        # N/A
+
+        # CREAMOS REGISTROS PARA FACT (opt toda la parte del renombrado y append)
+        df_fact_008 = df_temp_fact_008.groupby(['cod_issueraladdin', 'nam_issuer']).size().reset_index().rename(
+            columns={0: 'count'})[['cod_issueraladdin', 'nam_issuer']]
+
+        arg_dat_fact_date = datetime.strptime(arg_dat_fact, '%Y%m')
+
+        df_fact_008.rename(columns={'cod_issueraladdin': 'des_key_value1',
+                                    'nam_issuer': 'des_key_value2'},
+                           inplace=True)
+        df_fact_008['id_dq'] = 8
+        df_fact_008['des_key_value3'] = ''
+        df_fact_008['des_key_value4'] = ''
+        df_fact_008['des_key_value5'] = ''
+        df_fact_008['des_key_value6'] = ''
+        df_fact_008['des_key_value7'] = ''
+        df_fact_008['des_key_value8'] = ''
+        df_fact_008['dat_fact'] = arg_dat_fact_date
+
+        # Se añade la información de la validacion 8
+        df_fact = df_fact.append(df_fact_008)
+
+    #####################################################################
+    ## Paso 5: Se crea el df con los casos de validacion 10 (Calculo de casos KO de validacion 010: mismo emisor
+    ## Aladdin con distintas descripciones de parent company)
+    #####################################################################
+    df_daq010 = df_issuer_group[(df_issuer_group['nam_parentcompany'] > 1)]
+
+    # (print("Caso 10: Existen ", df_daq010.shape[0], " casos"))
+
+    #####################################################################
+    """" Paso 6: Si los resultados son > 0 hacemos lo siguiente:
+            Paso 6.1: Creamos el df con registros para insertar en la FACT
+            Paso 6.2: Insertamos en la FACT
+            Paso 6.3: Creamos el df con los registros de detalle y los insertamos (No siempre aplica este caso)
+    """
+    #####################################################################
+    if df_daq010.shape[0] > 0:
+        ## Paso 6.1: Creamos el df con registros para insertar en la FACT
+        df_temp_fact_010 = pd.merge(df_issuer,
+                                    df_daq010[['cod_issueraladdin']],
+                                    on="cod_issueraladdin", how="inner",
+                                    suffixes=('_A', '_B')
+                                    )
+
+        # Eliminamos columnas insertadas para los cálculos
+        # N/A
+
+        # CREAMOS REGISTROS PARA FACT (opt toda la parte del renombrado y append)
+        df_fact_010 = df_temp_fact_010.groupby(['cod_issueraladdin', 'nam_parentcompany']).size().reset_index().rename(
+            columns={0: 'count'})[['cod_issueraladdin', 'nam_parentcompany']]
+
+        df_fact_010.rename(columns={'cod_issueraladdin': 'des_key_value1',
+                                    'nam_parentcompany': 'des_key_value2'},
+                           inplace=True)
+        df_fact_010['id_dq'] = 10
+        df_fact_010['des_key_value3'] = ''
+        df_fact_010['des_key_value4'] = ''
+        df_fact_010['des_key_value5'] = ''
+        df_fact_010['des_key_value6'] = ''
+        df_fact_010['des_key_value7'] = ''
+        df_fact_010['des_key_value8'] = ''
+        df_fact_010['dat_fact'] = arg_dat_fact_date
+
+        # Se añade la información de la validacion 10
+        df_fact = df_fact.append(df_fact_010)
+
+    ## 003.6 Insertamos en la fact los casos KO
+    if df_fact.shape[0] > 0:
+        # Insertamos los df a Aurora
+        au_fact_table = "dtm_sam_daq_tb_mm_fac_base"
+        date_field_fact_au = DATE_FIELD_FACT_AU
+
+        Utils.load_datamart(df_fact, au_fact_table, arg_dat_fact, date_field_fact_au)
