@@ -1,6 +1,15 @@
-import logging.config
-import logging
-
-def main(...):
-  logging.config.fileConfig(os.path.join(COMMON_PATH, 'Config', cfg_general["log_config_file"]), defaults={
-                              'logfilename': os.path.join(COMMON_PATH, f'./Logs/{basename(os.path.dirname(os.path.abspath(__file__)))}.log')})
+fact_dtypes = np.dtype(
+        [
+            ("id_dq", int),
+            ("des_key_value1", str),
+            ("des_key_value2", str),
+            ("des_key_value3", str),
+            ("des_key_value4", str),
+            ("des_key_value5", str),
+            ("des_key_value6", str),
+            ("des_key_value7", str),
+            ("des_key_value8", str),
+            ('dat_fact', np.datetime64)
+        ]
+    )
+    df_fact = pd.DataFrame(np.empty(0, dtype=fact_dtypes))
