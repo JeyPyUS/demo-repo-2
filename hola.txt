@@ -1,6 +1,8 @@
-mock_dict = {
-        'cod0': np.array([0]),
-        'cod1': np.array([1, 2])
-    }
-
-    expected_list = np.array(list(mock_dict.values()), dtype=object)
+def join_dates(tramo, df):
+    '''
+    Relación de fechas
+    '''
+    np_fechaobjetivo = df.fecha - pd.DateOffset(months=tramo)
+    gap = (df.fecha.values - np_fechaobjetivo).astype(DATA_TYPE).astype("int").values
+    idx =  np.arange(len(df)) - gap
+    return df.rent.values[idx], gap
