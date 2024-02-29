@@ -1,8 +1,8 @@
-def join_dates(tramo, df):
+def join_dates_p(tramo, df, f_a_calcular):
     '''
-    Relación de fechas
+    Relación de fechas p
     '''
-    np_fechaobjetivo = df.fecha - pd.DateOffset(months=tramo)
-    gap = (df.fecha.values - np_fechaobjetivo).astype(DATA_TYPE).astype("int").values
-    idx =  np.arange(len(df)) - gap
+    np_fechaobjetivo = df.fecha[f_a_calcular] - pd.DateOffset(months=tramo)
+    gap = (df.fecha.values[f_a_calcular] - np_fechaobjetivo).astype(DATA_TYPE).astype("int").values
+    idx =  np.arange(len(df))[f_a_calcular] - gap
     return df.rent.values[idx], gap
