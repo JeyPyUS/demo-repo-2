@@ -1,8 +1,21 @@
-def join_dates_p(tramo, df, f_a_calcular):
+def fix_bad_dates(rango, gap, parcial, dict_class, f_a_calcular, df):
     '''
-    Relación de fechas p
+    Corrección de fechas
     '''
-    np_fechaobjetivo = df.fecha[f_a_calcular] - pd.DateOffset(months=tramo)
-    gap = (df.fecha.values[f_a_calcular] - np_fechaobjetivo).astype(DATA_TYPE).astype("int").values
-    idx =  np.arange(len(df))[f_a_calcular] - gap
-    return df.rent.values[idx], gap
+    lista = []
+    if parcial:
+        x = np.zeros(len(df))
+        x = x + 99999
+        x[f_a_calcular] = gap
+        gap = x
+    for i in range(len(dict_class)):
+        if len(dict_class[i])>rango[-1]:
+            a = dict_class[i][rango]
+            index = np.arange(len(dict_class[i]))
+            comp = index[rango] >= gap[a]
+            if comp.any():
+                num = index[np.where(comp)[0][0]]
+                lista.extend(dict_class[i][:(rango[0]+num)])
+        else:
+            lista.extend(dict_class[i])
+    return np.array(lista)
