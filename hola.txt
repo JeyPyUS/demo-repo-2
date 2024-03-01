@@ -1,7 +1,7 @@
-def join_xtodate(periodo, df):
+def join_xtodate_p(periodo, df, f_a_calcular):
     '''
-    Version total del join de los xtodate
+    Version parcial del join de los xtodate
     '''
-    gap = (df.fecha.values - df.fecha.values.astype(f'datetime64[{periodo}]').astype('datetime64[D]')).astype(DATA_TYPE).astype("int")
-    idx =  np.arange(len(df)) - gap
+    gap = (df.fecha.values[f_a_calcular] - df.fecha.values[f_a_calcular].astype(f'datetime64[{periodo}]').astype('datetime64[D]')).astype(DATA_TYPE).astype("int")
+    idx =  np.arange(len(df))[f_a_calcular] - gap
     return df.rent.values[idx], gap
