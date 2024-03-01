@@ -1,29 +1,7 @@
-def fix_bad_xtodate_p(rango, gap, f_a_calcular, df, dict_class):
+def join_xtodate(periodo, df):
     '''
-    Corrección de x a fechas p
+    Version total del join de los xtodate
     '''
-    lista = []
-
-    if rango == "M":
-        rango = np.arange(31)
-    else:
-        rango = np.arange(366)
-
-    x = np.zeros(len(df))
-    x = x + 99999
-    x[f_a_calcular] = gap
-    gap = x
-
-    for i in range(len(dict_class)):
-        if len(dict_class[i])>rango[-1]:
-            a = dict_class[i][rango]
-            index = np.arange(len(dict_class[i]))
-            comp = index[rango] >= gap[a]
-            if comp.any():
-                num = index[np.where(comp)[0][0]]
-            else:
-                num=0
-        else:
-            num = len(dict_class[i])
-        lista.append(dict_class[i][:num])
-    return lista
+    gap = (df.fecha.values - df.fecha.values.astype(f'datetime64[{periodo}]').astype('datetime64[D]')).astype(DATA_TYPE).astype("int")
+    idx =  np.arange(len(df)) - gap
+    return df.rent.values[idx], gap
