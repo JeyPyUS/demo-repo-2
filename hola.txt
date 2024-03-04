@@ -1,7 +1,33 @@
-def join_xtodate_p(periodo, df, f_a_calcular):
-    '''
-    Version parcial del join de los xtodate
-    '''
-    gap = (df.fecha.values[f_a_calcular] - df.fecha.values[f_a_calcular].astype(f'datetime64[{periodo}]').astype('datetime64[D]')).astype(DATA_TYPE).astype("int")
-    idx =  np.arange(len(df))[f_a_calcular] - gap
-    return df.rent.values[idx], gap
+    """
+    Creacion de la columna con la que se realizara el calculo
+    Paso 1: Cruzar los datos independientemente de que algunos datos esten equivocados (por tomarlos de otra clase contigua)
+    Paso 2: Limpiar esos datos erroneos poniendolos a NaN. Sabemos que los datos erroneos serán los :n primeros de cada clase,
+            donde n viene determinado por dict_ranges
+    """
+    if columna == "per_returnweek":
+        #join_dates personalizado
+        past_value = np.pad(df.rent.values, (7, 0), 'constant', constant_values=np.nan)[:len(df)]
+        # fix_bad_dates personalizado
+        lista = []
+        for i in range(len(dict_class)):
+            lista.extend(dict_class[i][:7])
+        past_value[np.array(lista)] = np.nan
+
+    elif columna == "per_returnmtd":
+        margen = "M"
+        past_value, gap = join_xtodate(margen, df)
+        past_value = fix_bad_xtodate(margen, gap, past_value, df, dict_class)
+    elif columna == "per_returnytd":
+        margen = "Y"
+        past_value, gap = join_xtodate(margen, df)
+        past_value = fix_bad_xtodate(margen, gap, past_value, df, dict_class)
+    else:
+        past_value, gap = join_dates(dict_time[columna], df)
+        idx = fix_bad_dates(dict_ranges[columna], gap, parcial, dict_class, f_a_calcular, df)
+        past_value[idx]=np.nan
+
+    #Calculo del valor final
+    if columna in periodicas:
+        df[columna] = np.divide(df["rent"].values-past_value, past_value, out=np.zeros_like(df["rent"].values), where=past_value!=0)
+    if columna in anualizadas:
+        df[columna] = (np.divide(df["rent"].values, past_value, out=np.zeros_like(df["rent"].values), where=past_value!=0) ** (1/denominador)) -1
