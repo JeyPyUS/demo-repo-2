@@ -1,3 +1,4 @@
+def calcular_columna(columna, denominador, df, dict_class, parcial, f_a_calcular):
     """
     Creacion de la columna con la que se realizara el calculo
     Paso 1: Cruzar los datos independientemente de que algunos datos esten equivocados (por tomarlos de otra clase contigua)
