@@ -1,15 +1,13 @@
-create table tmp_calculoserie_per_3 as (
-select A.*, B.dat_startseries, C.cod_source from (
-(select * from tmp_sam_calculorentabilidades_new_limites_per order by cod_classinfinity,fecha) A
-left join
-(select A2.*,coalesce (B2.dat_startseries,'1950-01-01') as dat_startseries from (
-(select distinct cod_classinfinity, cod_fundinfinity from sam_dwh.dwh_sam_mts_tb_mm_dim_classmaster
-where flg_scdactive) A2
-left join
-(select distinct cod_fundinfinity,dat_startseries from sam_dwh.dwh_sam_mts_tb_mm_dim_fundmaster
-where flg_scdactive)B2
-on A2.cod_fundinfinity=B2.cod_fundinfinity))B
-on A.cod_classinfinity=b.cod_classinfinity
-left join
-(select distinct cod_classinfinity, dat_fact,cod_source from tmp_sam_per_calculorentabilidades_2_new)C
-on A.cod_classinfinity=C.cod_classinfinity and A.fecha=C.dat_fact));
+def fill_bad_values(lista, past_value, df, f_a_calcular, dict_class):
+    '''
+    Rellenado de campos no válidos
+    '''
+    dummy = np.zeros(len(df))
+    dummy[f_a_calcular] = past_value
+
+    for i,j in enumerate(lista):
+        if len(j)!=0:
+            dummy[j] = df.rent.values[dict_class[i][0]]
+
+    past_value = dummy[f_a_calcular]
+    return past_value
