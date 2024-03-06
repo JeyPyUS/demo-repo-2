@@ -1,13 +1,61 @@
-def fill_bad_values(lista, past_value, df, f_a_calcular, dict_class):
-    '''
-    Rellenado de campos no válidos
-    '''
-    dummy = np.zeros(len(df))
-    dummy[f_a_calcular] = past_value
+def main():
+    #Creamos el dataframe con todas las clases
+    df_clases = pd.read_sql_query("select distinct cod_classindustry from tmp_sam_ind_calculorentabilidades_new;",con_db)
 
-    for i,j in enumerate(lista):
-        if len(j)!=0:
-            dummy[j] = df.rent.values[dict_class[i][0]]
+    #Creamos un array de numPy con todas las clases de la tabla
+    clases_array = df_clases.cod_classindustry.to_numpy()
 
-    past_value = dummy[f_a_calcular]
-    return past_value
+    column_types = {
+        "cod_classindustry": "category",
+        "per_returnnet": "float64",
+    }
+
+    start = salto
+    tmp_clases = clases_array[:salto]
+
+    archivo = 0
+
+    while True:
+
+        str_clases = "','".join(tmp_clases)
+        query = f"select dat_fact, cod_classindustry, per_returnnet from tmp_sam_ind_calculorentabilidades_new where cod_classindustry in ('{str_clases}');"
+        df = pd.read_sql_query(query,con_db, parse_dates=["dat_fact"]).sort_values(by=["cod_classindustry","dat_fact"]).reset_index(drop=True)
+
+        df = df.astype(column_types)
+
+        dict_class = crear_diccionario(df)
+
+        keys = np.array(list(dict_class.keys()))
+        if len(keys)>1:
+            dict_class = np.array(list(dict_class.values()), dtype=object)
+        else:
+            dict_class = np.array(list(dict_class.values()), dtype=int)
+
+        #Calculo de la serie
+        per_returnnet = df.per_returnnet.values
+        rent = []
+        for i in range(len(dict_class)):
+            rent_prev = per_returnnet[dict_class[i][0]] + 1
+            rent.append(rent_prev)
+            for j in range(len(dict_class[i])-1):
+                rent_prev = rent_prev * (1 + per_returnnet[dict_class[i][j+1]])
+                rent.append(rent_prev)
+        df["rent"] = np.array(rent)
+
+        f_value = [dict_class[i][0] for i in range(len(dict_class))]
+        df.columns = ["fecha", "cod_classindustry", "per_returnnet", "rent"]
+
+        df.iloc[np.setxor1d(np.arange(len(df)), f_value)].to_parquet(f"{path_csv}serie_ind_{archivo}.parquet", index=False)
+
+        if(len(tmp_clases) != salto):
+            break
+
+        tmp_clases = clases_array[start:start+salto]
+        start = start+salto
+
+        archivo = archivo + 1
+
+        if(len(tmp_clases) == 0):
+            break
+
+    con_db.dispose()
