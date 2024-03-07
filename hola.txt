@@ -1,8 +1,45 @@
-def rellenar_flgs(df_input):
-    '''
-    Llenado de banderas
-    '''
-    list_flg = ["flg_aum", "flg_fundaum", "flg_navpershare", "flg_shares"]
-    list_col = ["imp_aum","imp_fundaum","imp_navpershare","num_shares"]
-    for i, j in zip(list_flg, list_col):
-        df_input[i] = ~np.isnan(df_input[j].values)
+def main():
+    #Creamos el dataframe con todas las clases
+    df_clases = pd.read_sql_query("select distinct cod_classindustry from tmp_sam_ind_calculorentabilidades_newh;",con_db)
+    if(len(df_clases) == 0):
+        print("FALLO DE EJECUCION: No se han encontrado nuevas clases porque la tabla estaba vacia.")
+        con_db.dispose()
+        exit()
+    #Creamos un array de numPy con todas las clases de la tabla
+    clases_array = df_clases.cod_classindustry.to_numpy()
+
+    start = salto
+    tmp_clases = clases_array[:salto]
+
+    contador = 0
+
+
+    while True:
+
+        str_clases = "','".join(tmp_clases)
+        query = f"select cod_classindustry, dat_fact, cod_currency, imp_aum, imp_fundaum, imp_navpershare, num_shares, flg_aum, flg_fundaum, flg_navpershare, flg_shares from tmp_sam_ind_calculorentabilidades_newh where cod_classindustry in ('{str_clases}');"
+        df_input = pd.read_sql_query(query,con_db, parse_dates=["dat_fact"]).sort_values(by=["cod_classindustry","dat_fact"]).reset_index(drop=True)
+
+        df_input = df_input.astype(column_types)
+
+        apply_flgs(df_input)
+        rellenar_flgs(df_input)
+
+        np_curr = df_input.cod_currency.to_numpy()
+        f_value, f_curr = primer_valor(np_curr, df_input)
+        rellenar_data(np_curr, f_value, f_curr, df_input)
+
+        df_input.iloc[np.setxor1d(np.arange(len(df_input)), f_value)].to_parquet(f"{path_csv}huecos_ind_{contador}.parquet", index=False)
+
+        if(len(tmp_clases) != salto):
+            break
+
+        tmp_clases = clases_array[start:start+salto]
+        start = start+salto
+
+        contador = contador + 1
+
+        if(len(tmp_clases) == 0):
+            break
+
+    con_db.dispose()
