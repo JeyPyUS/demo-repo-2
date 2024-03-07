@@ -1,5 +1,5 @@
-select count(*), cod_classindustry
-from sam_dwh.dwh_sam_ind_tb_dd_dim_classmaster
-where flg_scdactive and cod_classindustry is not null
-group by cod_classindustry
-having count(*) > 1
+	select count(*), cod_classindustry, dat_fact
+	from sam_dwh.DWH_SAM_IND_TB_DD_FAC_INDUSTRYCLASS
+	where flg_aum and cod_classindustry is not null
+	group by cod_classindustry, dat_fact
+	having count(*) > 1
