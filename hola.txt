@@ -1,12 +1,14 @@
-def rellenar(fila, columna):
+def rellenar_fila(fila, np_curr, f_value, f_curr, df_input):
     '''
-    Rellenar los valores con el valor anterior
+    Llenado de fila
     '''
     if fila != "cod_currency":
-        mask = np.isnan(columna)
+        np_fila = df_input[fila].to_numpy()
+        np_fila[f_value[np.where(np.isnan(np_fila[f_value]))]] = -99999
+        np_fila = rellenar(fila, np_fila)
+        np_fila[np.where(np_fila==-99999)] = np.nan
+        return np_fila
     else:
-        mask = ~(columna==columna)
-    idx = np.where(~mask,np.arange(mask.size),0)
-    np.maximum.accumulate(idx, out=idx)
-    columna = columna[idx]
-    return columna
+        np_curr[f_value] = f_curr
+        np_curr = rellenar(fila, np_curr)
+        return np_curr
