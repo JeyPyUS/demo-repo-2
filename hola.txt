@@ -1,8 +1,8 @@
-def apply_flgs(df_input):
+def rellenar_flgs(df_input):
     '''
-    Aplicación de banderas
+    Llenado de banderas
     '''
     list_flg = ["flg_aum", "flg_fundaum", "flg_navpershare", "flg_shares"]
     list_col = ["imp_aum","imp_fundaum","imp_navpershare","num_shares"]
     for i, j in zip(list_flg, list_col):
-        df_input[j].values[df_input[i].values == False] = np.nan
+        df_input[i] = ~np.isnan(df_input[j].values)
