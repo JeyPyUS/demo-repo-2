@@ -1,14 +1,8 @@
-def rellenar_fila(fila, np_curr, f_value, f_curr, df_input):
+def apply_flgs(df_input):
     '''
-    Llenado de fila
+    Aplicación de banderas
     '''
-    if fila != "cod_currency":
-        np_fila = df_input[fila].to_numpy()
-        np_fila[f_value[np.where(np.isnan(np_fila[f_value]))]] = -99999
-        np_fila = rellenar(fila, np_fila)
-        np_fila[np.where(np_fila==-99999)] = np.nan
-        return np_fila
-    else:
-        np_curr[f_value] = f_curr
-        np_curr = rellenar(fila, np_curr)
-        return np_curr
+    list_flg = ["flg_aum", "flg_fundaum", "flg_navpershare", "flg_shares"]
+    list_col = ["imp_aum","imp_fundaum","imp_navpershare","num_shares"]
+    for i, j in zip(list_flg, list_col):
+        df_input[j].values[df_input[i].values == False] = np.nan
