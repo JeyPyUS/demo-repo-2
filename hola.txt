@@ -1,11 +1,1 @@
-SELECT
-    s.cd_job,
-    f.cd_filesystem
-FROM
-    fw_etl_dev.fw_dim_subprocesos s
-JOIN
-    fw_etl_dev.fw_ingesta_ficheros f
-ON
-    s.cd_job = f.cd_job
-WHERE
-    s.id_proyecto = 24;
+{'error': 'The client specified an invalid argument.', 'code': 'INVALID_ARGUMENT', 'message': 'Validation failed in PostOrderRequest.agraph.trading.order_management.order.v1.PostOrderRequest.order: is required - Got null'}
