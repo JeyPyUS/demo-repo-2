@@ -1,5 +1,7 @@
-	select count(*), cod_classindustry, dat_fact
-	from sam_dwh.DWH_SAM_IND_TB_DD_FAC_INDUSTRYCLASS
-	where flg_aum and cod_classindustry is not null
-	group by cod_classindustry, dat_fact
-	having count(*) > 1
+def create_s3_file(bucket, file, content):
+    '''
+    Function to create a new file.
+    '''
+
+    s3 = boto3.client('s3')
+    s3.put_object(Body=content, Bucket=bucket, Key=file)
