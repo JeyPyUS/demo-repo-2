@@ -1,7 +1,20 @@
-def create_s3_file(bucket, file, content):
+def get_s3_file(record, bucket = None, file_name = None):
     '''
-    Function to create a new file.
+    Function to get a file that is in a bucket of S3.
     '''
 
     s3 = boto3.client('s3')
-    s3.put_object(Body=content, Bucket=bucket, Key=file)
+
+    if record:
+        bucket = record['s3']['bucket']['name']
+        file_name = record['s3']['object']['key']
+
+    s3_object = s3.get_object(Bucket = bucket, Key = file_name)
+
+    file_content = s3_object["Body"].read().decode('utf-8')
+
+    output = io.StringIO()
+    output.write(file_content)
+    output.seek(0)
+
+    return output
