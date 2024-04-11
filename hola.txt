@@ -1,18 +1,36 @@
-def check_if_exists_s3_object(filename, bucket_name, prefix):
+def s3_move_files(bucket_orig, bucket_dest, filename, overwrite, prefix_orig = None, prefix_dest = None):
+
+    s3 = boto3.resource('s3')
 
     # Homogeneizar el uso de las barras
-    if prefix:
-        prefix = prefix.strip("/ ") # Remove any spaces and slashes from the start and the beginning of the string
+    if prefix_orig:
+        # Remove any spaces and slashes from the start and the beginning of the string
+        prefix_orig = prefix_orig.strip("/ ")
+    if prefix_dest:
+        # Remove any spaces and slashes from the start and the beginning of the string
+        prefix_dest = prefix_dest.strip("/ ")
 
-    s3 = boto3.client('s3')
-    paginator = s3.get_paginator('list_objects_v2')
-    pages = paginator.paginate(Bucket = bucket_name, Prefix = prefix)
+    file_name_clean = filename.split('/')[-1]
+    new_filename = file_name_clean
 
-    prefix_file = prefix + '/' + filename if prefix else filename
+    if not overwrite:
+        today = datetime.datetime.strftime(datetime.datetime.now(),'%Y%m%d_%H%M%S')
+        if check_if_exists_s3_object(file_name_clean, bucket_dest, prefix = prefix_dest):
+            new_filename = f"{today}_{file_name_clean}"
 
-    for page in pages:
-        for obj in page['Contents']:
-            if obj['Key'] == f"{prefix_file}":
-                return True
+    prefix_file_orig = prefix_orig + '/' + new_filename if prefix_orig else new_filename
+    prefix_file_dest = prefix_dest + '/' + new_filename if prefix_dest else new_filename
 
-    return False
+    try:
+        s3.Object(bucket_dest, prefix_file_dest).copy_from(CopySource = f'{bucket_orig}/{prefix_file_orig}')
+    except Exception as e:
+        logger.error(f'Ha ocurrido un error copiando el fichero {new_filename} desde {bucket_orig}/{prefix_file_orig} hacia {bucket_dest}/{prefix_file_dest}. Error: {e}')
+        return False
+
+    try:
+        s3.Object(bucket_orig, prefix_file_orig).delete()
+    except Exception as e:
+        logger.error(f'Ha ocurrido un error eliminando el fichero {new_filename} situado en {bucket_orig}/{prefix_file_orig}. Error: {e}')
+        return False
+
+    return True
