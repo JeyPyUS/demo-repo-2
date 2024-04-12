@@ -1,36 +1,49 @@
-def s3_move_files(bucket_orig, bucket_dest, filename, overwrite, prefix_orig = None, prefix_dest = None):
+def data_wrangling(df, df_positions_api, fund_codes_dict, fund_codes_eod,
+                   secgroup_fund, secgroup_cash, secgroup_commited):
+    '''
+    Data cleaning
+    '''
+    # Map the lowering function to all column names
+    df.columns = map(str.lower, df.columns)
 
-    s3 = boto3.resource('s3')
+    # if value of cash adjustment amount is NaN, return NaN. If greater than 0 is positive, else negative
+    df["tipo_operativa"] = np.where(df['cash_adjustment_amount'].isnull(), np.nan, np.where(df['cash_adjustment_amount'] > 0, 'BUY', 'SELL'))
 
-    # Homogeneizar el uso de las barras
-    if prefix_orig:
-        # Remove any spaces and slashes from the start and the beginning of the string
-        prefix_orig = prefix_orig.strip("/ ")
-    if prefix_dest:
-        # Remove any spaces and slashes from the start and the beginning of the string
-        prefix_dest = prefix_dest.strip("/ ")
+    # Dataframe filter by bo_acc_code and columns
+    df_filter_eod = filter_df_bycode(df, 'bo_acc_code', fund_codes_eod)[["bo_acc_code", "cash_adjustment_amount", "tipo_operativa", "as_of_date"]]
 
-    file_name_clean = filename.split('/')[-1]
-    new_filename = file_name_clean
+    df_filter_eod.replace({'bo_acc_code': fund_codes_dict}, inplace=True)
 
-    if not overwrite:
-        today = datetime.datetime.strftime(datetime.datetime.now(),'%Y%m%d_%H%M%S')
-        if check_if_exists_s3_object(file_name_clean, bucket_dest, prefix = prefix_dest):
-            new_filename = f"{today}_{file_name_clean}"
+    # Map the lowering function to all column names
+    df_positions_api.columns = map(str.lower, df_positions_api.columns)
 
-    prefix_file_orig = prefix_orig + '/' + new_filename if prefix_orig else new_filename
-    prefix_file_dest = prefix_dest + '/' + new_filename if prefix_dest else new_filename
+    # Filter to get only a few columns
+    df_positions_api = df_positions_api.filter(["portfolioname", "secgroup", "secdesc1", "portfolionavcomputed", "mktvalue", "assetid", "price"], axis = 1)
 
-    try:
-        s3.Object(bucket_dest, prefix_file_dest).copy_from(CopySource = f'{bucket_orig}/{prefix_file_orig}')
-    except Exception as e:
-        logger.error(f'Ha ocurrido un error copiando el fichero {new_filename} desde {bucket_orig}/{prefix_file_orig} hacia {bucket_dest}/{prefix_file_dest}. Error: {e}')
-        return False
+    # Filter by secGroup = FUND and secDesc1 contains "Commited"
+    positions_api_by_secgroup = df_positions_api[(df_positions_api['secgroup'] == secgroup_fund) | ((df_positions_api['secdesc1'].str.contains(secgroup_commited)) & (df_positions_api['secgroup'] == secgroup_cash))]
 
-    try:
-        s3.Object(bucket_orig, prefix_file_orig).delete()
-    except Exception as e:
-        logger.error(f'Ha ocurrido un error eliminando el fichero {new_filename} situado en {bucket_orig}/{prefix_file_orig}. Error: {e}')
-        return False
+    ### Creating Cash DF
+    cash_df = positions_api_by_secgroup[positions_api_by_secgroup['secgroup'] == secgroup_cash]
+    cash_df = cash_df[['portfolioname', 'mktvalue']]
+    positions_api_liquided_total = cash_df.copy()
 
-    return True
+    # Aggregate column liq_total_fondo
+    positions_api_liquided_total['liq_total_fondo'] = positions_api_liquided_total.groupby('portfolioname')['mktvalue'].transform(np.sum)
+    cash_df = positions_api_liquided_total[['portfolioname', 'liq_total_fondo']].drop_duplicates()
+
+    ### Creating Fund DF
+    fund_df = positions_api_by_secgroup[positions_api_by_secgroup['secgroup'] == secgroup_fund]
+    fund_df = fund_df[['portfolioname', 'portfolionavcomputed', 'price', 'assetid']].drop_duplicates()
+
+    ### Dataframe API DATA
+    df_api = pd.merge(fund_df, cash_df, on = 'portfolioname')
+
+    ### Final dataframe with api and eod data ###
+    df = pd.merge(df_api, df_filter_eod, left_on = 'portfolioname', right_on = 'bo_acc_code')
+
+    df.drop('bo_acc_code', axis = 1, inplace = True)
+
+    df.rename(columns = {'portfolioname': 'portfolio', 'portfolionavcomputed': 'aum'}, inplace = True)
+
+    return df
