@@ -1,49 +1,28 @@
-def data_wrangling(df, df_positions_api, fund_codes_dict, fund_codes_eod,
-                   secgroup_fund, secgroup_cash, secgroup_commited):
+def filter_df_bycode(df, column_name, fund_codes):
+    '''The function `filter_df_bycode` filters a DataFrame based on a specified column and a list of codes.
+
+    Parameters
+    ----------
+    df
+        The `df` parameter is typically used to represent a DataFrame in Python, which is a two-dimensional,
+        size-mutable, and
+    potentially heterogeneous tabular data structure with labeled axes (rows and columns). It is commonly used in data
+    analysis and manipulation tasks using libraries such as pandas.
+    column_name
+        The `column_name` parameter in the `filter_df_bycode` function refers to the name of the column in the
+        DataFrame (`df`)
+    that contains the fund codes. This parameter is used to specify which column should be filtered
+    based on the provided
+    `fund_codes`.
+    fund_codes
+        Fund codes are a list of codes used to identify specific funds or investments within a dataset.
+
+    Returns
+    -------
+        The function `filter_df_bycode` returns a filtered DataFrame based on the specified fund codes
+        in the given column of
+    the DataFrame.
+
     '''
-    Data cleaning
-    '''
-    # Map the lowering function to all column names
-    df.columns = map(str.lower, df.columns)
-
-    # if value of cash adjustment amount is NaN, return NaN. If greater than 0 is positive, else negative
-    df["tipo_operativa"] = np.where(df['cash_adjustment_amount'].isnull(), np.nan, np.where(df['cash_adjustment_amount'] > 0, 'BUY', 'SELL'))
-
-    # Dataframe filter by bo_acc_code and columns
-    df_filter_eod = filter_df_bycode(df, 'bo_acc_code', fund_codes_eod)[["bo_acc_code", "cash_adjustment_amount", "tipo_operativa", "as_of_date"]]
-
-    df_filter_eod.replace({'bo_acc_code': fund_codes_dict}, inplace=True)
-
-    # Map the lowering function to all column names
-    df_positions_api.columns = map(str.lower, df_positions_api.columns)
-
-    # Filter to get only a few columns
-    df_positions_api = df_positions_api.filter(["portfolioname", "secgroup", "secdesc1", "portfolionavcomputed", "mktvalue", "assetid", "price"], axis = 1)
-
-    # Filter by secGroup = FUND and secDesc1 contains "Commited"
-    positions_api_by_secgroup = df_positions_api[(df_positions_api['secgroup'] == secgroup_fund) | ((df_positions_api['secdesc1'].str.contains(secgroup_commited)) & (df_positions_api['secgroup'] == secgroup_cash))]
-
-    ### Creating Cash DF
-    cash_df = positions_api_by_secgroup[positions_api_by_secgroup['secgroup'] == secgroup_cash]
-    cash_df = cash_df[['portfolioname', 'mktvalue']]
-    positions_api_liquided_total = cash_df.copy()
-
-    # Aggregate column liq_total_fondo
-    positions_api_liquided_total['liq_total_fondo'] = positions_api_liquided_total.groupby('portfolioname')['mktvalue'].transform(np.sum)
-    cash_df = positions_api_liquided_total[['portfolioname', 'liq_total_fondo']].drop_duplicates()
-
-    ### Creating Fund DF
-    fund_df = positions_api_by_secgroup[positions_api_by_secgroup['secgroup'] == secgroup_fund]
-    fund_df = fund_df[['portfolioname', 'portfolionavcomputed', 'price', 'assetid']].drop_duplicates()
-
-    ### Dataframe API DATA
-    df_api = pd.merge(fund_df, cash_df, on = 'portfolioname')
-
-    ### Final dataframe with api and eod data ###
-    df = pd.merge(df_api, df_filter_eod, left_on = 'portfolioname', right_on = 'bo_acc_code')
-
-    df.drop('bo_acc_code', axis = 1, inplace = True)
-
-    df.rename(columns = {'portfolioname': 'portfolio', 'portfolionavcomputed': 'aum'}, inplace = True)
-
+    df = df[df[column_name].isin(fund_codes)]
     return df
