@@ -1,28 +1,5 @@
-def filter_df_bycode(df, column_name, fund_codes):
-    '''The function `filter_df_bycode` filters a DataFrame based on a specified column and a list of codes.
-
-    Parameters
-    ----------
-    df
-        The `df` parameter is typically used to represent a DataFrame in Python, which is a two-dimensional,
-        size-mutable, and
-    potentially heterogeneous tabular data structure with labeled axes (rows and columns). It is commonly used in data
-    analysis and manipulation tasks using libraries such as pandas.
-    column_name
-        The `column_name` parameter in the `filter_df_bycode` function refers to the name of the column in the
-        DataFrame (`df`)
-    that contains the fund codes. This parameter is used to specify which column should be filtered
-    based on the provided
-    `fund_codes`.
-    fund_codes
-        Fund codes are a list of codes used to identify specific funds or investments within a dataset.
-
-    Returns
-    -------
-        The function `filter_df_bycode` returns a filtered DataFrame based on the specified fund codes
-        in the given column of
-    the DataFrame.
-
-    '''
-    df = df[df[column_name].isin(fund_codes)]
-    return df
+msg_exc_type = 'Tipo de ejecución: '
+msg_exc_type += 'DIARIA' if daily_exc else ''
+msg_exc_type += '+' if daily_exc and monthly_exc else ''
+msg_exc_type += 'MENSUAL' if monthly_exc else ''
+msg_exc_type += ' (HISTÓRICO PRECIOS Y RENTABILIDADES)' if flg_hist else ''
