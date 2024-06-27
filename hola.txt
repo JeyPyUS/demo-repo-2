@@ -1,3 +1,22 @@
-UserWarning: pandas only supports SQLAlchemy connectable (engine/connection) or database string URI or sqlite3 DBAPI2 connection. Other DBAPI2 objects are not tested. Please consider using SQLAlchemy.
+[...truncated 596 lines...]
+hint: See above for details.
 
-Error on get_cash(): 'Engine' object has no attribute 'cursor'
+[notice] A new release of pip available: 22.2.2 -> 24.1.1
+[notice] To update, run: pip install --upgrade pip
+error: subprocess-exited-with-error
+
+× pip subprocess to install build dependencies did not run successfully.
+│ exit code: 1
+╰─> See above for output.
+
+note: This error originates from a subprocess, and is likely not a problem with pip.
+full command: /home/jenkins/agent/workspace/mi-infi_lambda-layer_development/env/bin/python /home/jenkins/agent/workspace/mi-infi_lambda-layer_development/env/lib/python3.11/site-packages/pip/__pip-runner__.py install --ignore-installed --no-user --prefix /tmp/pip-build-env-titoeh_x/overlay --no-warn-script-location --no-binary :none: --only-binary :none: -i https://nexus.alm.europe.cloudcenter.corp/repository/pypi-public/simple --trusted-host nexus.alm.europe.cloudcenter.corp --trusted-host nexusmaster.alm.europe.cloudcenter.corp -- 'setuptools>=51.0.0' wheel 'Cython>=0.29.21,<3' 'numpy==1.17.3; python_version=='"'"'3.7'"'"' and (platform_machine!='"'"'arm64'"'"' or platform_system!='"'"'Darwin'"'"') and platform_machine!='"'"'aarch64'"'"'' 'numpy==1.18.3; python_version=='"'"'3.8'"'"' and (platform_machine!='"'"'arm64'"'"' or platform_system!='"'"'Darwin'"'"') and platform_machine!='"'"'aarch64'"'"'' 'numpy==1.19.3; python_version>='"'"'3.9'"'"' and (platform_machine!='"'"'arm64'"'"' or platform_system!='"'"'Darwin'"'"') and platform_machine!='"'"'aarch64'"'"'' 'numpy==1.19.2; python_version=='"'"'3.7'"'"' and platform_machine=='"'"'aarch64'"'"'' 'numpy==1.19.2; python_version=='"'"'3.8'"'"' and platform_machine=='"'"'aarch64'"'"'' 'numpy>=1.20.0; python_version=='"'"'3.8'"'"' and platform_machine=='"'"'arm64'"'"' and platform_system=='"'"'Darwin'"'"'' 'numpy>=1.20.0; python_version=='"'"'3.9'"'"' and platform_machine=='"'"'arm64'"'"' and platform_system=='"'"'Darwin'"'"''
+cwd: [inherit]
+Installing build dependencies: finished with status 'error'
+error: subprocess-exited-with-error
+
+× pip subprocess to install build dependencies did not run successfully.
+│ exit code: 1
+╰─> See above for output.
+
+note: This error originates from a subprocess, and is likely not a problem with pip.
