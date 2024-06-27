@@ -1,5 +1,3 @@
-Running setup.py install for greenlet: finished with status 'error'
-error: legacy-install-failure
+UserWarning: pandas only supports SQLAlchemy connectable (engine/connection) or database string URI or sqlite3 DBAPI2 connection. Other DBAPI2 objects are not tested. Please consider using SQLAlchemy.
 
-× Encountered error while trying to install package.
-╰─> greenlet
+Error on get_cash(): 'Engine' object has no attribute 'cursor'
