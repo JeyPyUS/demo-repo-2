@@ -1,1 +1,5 @@
-dict(sorted(dict_samoa_prefix.items(), reverse=True))
+Running setup.py install for greenlet: finished with status 'error'
+error: legacy-install-failure
+
+× Encountered error while trying to install package.
+╰─> greenlet
