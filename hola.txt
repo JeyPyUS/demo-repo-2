@@ -1,129 +1,81 @@
-import pandas as pd
-import logging
-import sys
-import os
-import boto3
-
-from sqlalchemy import create_engine, engine
-from sqlalchemy.exc import StatementError
-from botocore.config import Config
-
-proxy_definitions = {
-    'http': 'proxy.sig.umbrella.com:80',
-    'https': 'proxy.sig.umbrella.com:443'
-}
-logger = logging.getLogger()
-logger.setLevel(logging.WARNING)
-
-def get_exchange(dateFrom):
-
-    try:
-        query = """SELECT exc.cod_basecurrency,
-                           exc.per_exchangerate,
-                           DATE(exc.dat_fact) as 'dat_fact',
-                          (SELECT e.per_exchangerate
-                             FROM SAMDataMartPro.dtm_sam_gbl_tb_dd_fac_exchangerate e
-                    	    WHERE e.cod_source = 0
-                              AND e.dat_fact = '20200219'
-                              AND e.cod_exchangecurrency ='EUR'
-                              AND e.cod_basecurrency = exc.cod_basecurrency) as per_exchangeratestart
-                      FROM SAMDataMartPro.dtm_sam_gbl_tb_dd_fac_exchangerate exc
-                     WHERE exc.cod_source = 0
-                       AND exc.cod_exchangecurrency ='EUR'
-                       AND exc.dat_fact >= %(date)s
-                      ORDER BY dat_fact desc,cod_basecurrency asc;
-                """
-
-        others = """
-
-                """
-
-        df = pd.read_sql_query(query, myengine,  params={"date":dateFrom}, index_col=['dat_fact', 'cod_basecurrency'], parse_dates=True)
-
-        assert df.size > 0, "No hay datos para la fecha solicitada"
-
-        return df
-
-    except Exception as e:
-
-        logger.error('Error on get_exchange(): {}'.format(str(e)))
+Traceback (most recent call last):
+  File "c:\Users\x982454\Documents\Proyectos_Santander\Codigo\wmi-infinity-pruebas-JP\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1967, in _exec_single_context
+    self.dialect.do_execute(
+  File "c:\Users\x982454\Documents\Proyectos_Santander\Codigo\wmi-infinity-pruebas-JP\.venv\Lib\site-packages\sqlalchemy\engine\default.py", line 924, in do_execute
+    cursor.execute(statement, parameters)
+psycopg2.errors.UndefinedObject: unrecognized configuration parameter "standard_conforming_strings"
 
 
-def get_params():
+The above exception was the direct cause of the following exception:
 
-    try:
+Traceback (most recent call last):
+  File "c:\Users\x982454\Documents\Proyectos_Santander\Codigo\wmi-infinity-pruebas-JP\main.py", line 19, in <module>
+    with engine.connect() as connection:
+         ^^^^^^^^^^^^^^^^
+  File "c:\Users\x982454\Documents\Proyectos_Santander\Codigo\wmi-infinity-pruebas-JP\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 3276, in connect
+    return self._connection_cls(self)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\x982454\Documents\Proyectos_Santander\Codigo\wmi-infinity-pruebas-JP\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 146, in __init__
+    self._dbapi_connection = engine.raw_connection()
+                             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\x982454\Documents\Proyectos_Santander\Codigo\wmi-infinity-pruebas-JP\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 3300, in raw_connection       
+    return self.pool.connect()
+           ^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\x982454\Documents\Proyectos_Santander\Codigo\wmi-infinity-pruebas-JP\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 449, in connect
+    return _ConnectionFairy._checkout(self)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\x982454\Documents\Proyectos_Santander\Codigo\wmi-infinity-pruebas-JP\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 1263, in _checkout
+    fairy = _ConnectionRecord.checkout(pool)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\x982454\Documents\Proyectos_Santander\Codigo\wmi-infinity-pruebas-JP\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 712, in checkout
+    rec = pool._do_get()
+          ^^^^^^^^^^^^^^
+  File "c:\Users\x982454\Documents\Proyectos_Santander\Codigo\wmi-infinity-pruebas-JP\.venv\Lib\site-packages\sqlalchemy\pool\impl.py", line 179, in _do_get
+    with util.safe_reraise():
+  File "c:\Users\x982454\Documents\Proyectos_Santander\Codigo\wmi-infinity-pruebas-JP\.venv\Lib\site-packages\sqlalchemy\util\langhelpers.py", line 146, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "c:\Users\x982454\Documents\Proyectos_Santander\Codigo\wmi-infinity-pruebas-JP\.venv\Lib\site-packages\sqlalchemy\pool\impl.py", line 177, in _do_get
+    return self._create_connection()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\x982454\Documents\Proyectos_Santander\Codigo\wmi-infinity-pruebas-JP\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 390, in _create_connection      
+    return _ConnectionRecord(self)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\x982454\Documents\Proyectos_Santander\Codigo\wmi-infinity-pruebas-JP\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 674, in __init__
+    self.__connect()
+  File "c:\Users\x982454\Documents\Proyectos_Santander\Codigo\wmi-infinity-pruebas-JP\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 914, in __connect
+    )._exec_w_sync_on_first_run(self.dbapi_connection, self)
+      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\x982454\Documents\Proyectos_Santander\Codigo\wmi-infinity-pruebas-JP\.venv\Lib\site-packages\sqlalchemy\event\attr.py", line 483, in _exec_w_sync_on_first_run
+    self(*args, **kw)
+  File "c:\Users\x982454\Documents\Proyectos_Santander\Codigo\wmi-infinity-pruebas-JP\.venv\Lib\site-packages\sqlalchemy\event\attr.py", line 497, in __call__
+    fn(*args, **kw)
+  File "c:\Users\x982454\Documents\Proyectos_Santander\Codigo\wmi-infinity-pruebas-JP\.venv\Lib\site-packages\sqlalchemy\util\langhelpers.py", line 1912, in go
+    return once_fn(*arg, **kw)
+           ^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\x982454\Documents\Proyectos_Santander\Codigo\wmi-infinity-pruebas-JP\.venv\Lib\site-packages\sqlalchemy\engine\create.py", line 749, in first_connect       
+    dialect.initialize(c)
+  File "c:\Users\x982454\Documents\Proyectos_Santander\Codigo\wmi-infinity-pruebas-JP\.venv\Lib\site-packages\sqlalchemy\dialects\postgresql\psycopg2.py", line 677, in initialize
+    super().initialize(connection)
+  File "c:\Users\x982454\Documents\Proyectos_Santander\Codigo\wmi-infinity-pruebas-JP\.venv\Lib\site-packages\sqlalchemy\dialects\postgresql\base.py", line 3120, in initialize
+    self._set_backslash_escapes(connection)
+  File "c:\Users\x982454\Documents\Proyectos_Santander\Codigo\wmi-infinity-pruebas-JP\.venv\Lib\site-packages\sqlalchemy\dialects\postgresql\base.py", line 5004, in _set_backslash_escapes
+    std_string = connection.exec_driver_sql(
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\x982454\Documents\Proyectos_Santander\Codigo\wmi-infinity-pruebas-JP\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1779, in exec_driver_sql      
+    ret = self._execute_context(
+          ^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\x982454\Documents\Proyectos_Santander\Codigo\wmi-infinity-pruebas-JP\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1846, in _execute_context     
+    return self._exec_single_context(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\x982454\Documents\Proyectos_Santander\Codigo\wmi-infinity-pruebas-JP\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1986, in _exec_single_context 
+    self._handle_dbapi_exception(
+  File "c:\Users\x982454\Documents\Proyectos_Santander\Codigo\wmi-infinity-pruebas-JP\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 2353, in _handle_dbapi_exception
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+  File "c:\Users\x982454\Documents\Proyectos_Santander\Codigo\wmi-infinity-pruebas-JP\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1967, in _exec_single_context 
+    self.dialect.do_execute(
+  File "c:\Users\x982454\Documents\Proyectos_Santander\Codigo\wmi-infinity-pruebas-JP\.venv\Lib\site-packages\sqlalchemy\engine\default.py", line 924, in do_execute
+    cursor.execute(statement, parameters)
+sqlalchemy.exc.ProgrammingError: (psycopg2.errors.UndefinedObject) unrecognized configuration parameter "standard_conforming_strings"
 
-        ssm=boto3.client('ssm', config=Config(proxies=proxy_definitions))
-
-        params = {}
-        params['drivername'] = 'mysql+pymysql'
-        params['username'] = ssm.get_parameter(Name=aurora_username_envar)['Parameter']['Value']
-        params['password'] = ssm.get_parameter(Name=aurora_password_envar, WithDecryption=True)['Parameter']['Value']
-        params['host'] = ssm.get_parameter(Name=aurora_endpoint_envar)['Parameter']['Value']
-        params['database'] = ssm.get_parameter(Name=aurora_database_envar)['Parameter']['Value']
-
-        logger.debug('Successfully retrieved params from SSM')
-
-        return params
-
-    except Exception as e:
-        logger.error('Error on get_params(): {}'.format(str(e)))
-
-def get_cash(query, date):
-
-    logger.debug('Entra get_cash')
-
-    try:
-
-        logger.debug('get_cash - antes df')
-        df = pd.read_sql_query(query, myengine, params={"date":date}, index_col=['cod_country','cod_fundperformance','dat_fact'], parse_dates=True)
-        logger.debug('get_cash - despues df')
-
-        assert df.size > 0, "No hay datos para la fecha solicitada: {}".format(date)
-
-        return df
-
-    except Exception as e:
-
-        logger.error('Error on get_cash(): {}'.format(str(e)))
-
-def clean_table(schema_name, table_name):
-
-    str_truncate = "TRUNCATE TABLE " + schema_name + "." + table_name
-
-    try:
-
-        with myengine.connect() as conn:
-
-            conn.execute(str_truncate)
-
-            logger.debug('Successfully truncated table')
-
-    except:
-        logger.error("Unexpected error:", sys.exc_info()[0])
-        raise
-
-def df_to_db(schema_name, table_name, df_insert):
-
-    try:
-        logger.debug('[Inicio Insert]')
-
-        df_insert.to_sql(name= table_name, schema= schema_name, con= myengine, if_exists='append', index= False, chunksize=1000)
-
-        logger.debug('[Fin Insert]')
-
-    except Exception as e:
-
-        logger.error('Error on df_to_db(): {}'.format(str(e)))
-
-
-aurora_username_envar=os.getenv('aurora_username_envar')
-aurora_password_envar=os.getenv('aurora_password_envar')
-aurora_endpoint_envar=os.getenv('aurora_endpoint_envar')
-aurora_database_envar=os.getenv('aurora_database_envar')
-
-#Obtenemos los parametros de ssm
-params = get_params()
-
-#Establecemos la conexión
-myengine = create_engine(engine.url.URL(**params))
+[SQL: show standard_conforming_strings]
+(Background on this error at: https://sqlalche.me/e/20/f405)
