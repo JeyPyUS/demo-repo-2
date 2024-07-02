@@ -1,81 +1,16 @@
+UserWarning: pandas only supports SQLAlchemy connectable (engine/connection) or database string URI or sqlite3 DBAPI2 connection. Other DBAPI2 objects are not tested. Please consider using SQLAlchemy.
+  df = pd.read_sql_query(query, connection)
 Traceback (most recent call last):
-  File "c:\Users\x982454\Documents\Proyectos_Santander\Codigo\wmi-infinity-pruebas-JP\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1967, in _exec_single_context
-    self.dialect.do_execute(
-  File "c:\Users\x982454\Documents\Proyectos_Santander\Codigo\wmi-infinity-pruebas-JP\.venv\Lib\site-packages\sqlalchemy\engine\default.py", line 924, in do_execute
-    cursor.execute(statement, parameters)
-psycopg2.errors.UndefinedObject: unrecognized configuration parameter "standard_conforming_strings"
-
-
-The above exception was the direct cause of the following exception:
-
-Traceback (most recent call last):
-  File "c:\Users\x982454\Documents\Proyectos_Santander\Codigo\wmi-infinity-pruebas-JP\main.py", line 19, in <module>
-    with engine.connect() as connection:
-         ^^^^^^^^^^^^^^^^
-  File "c:\Users\x982454\Documents\Proyectos_Santander\Codigo\wmi-infinity-pruebas-JP\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 3276, in connect
-    return self._connection_cls(self)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "c:\Users\x982454\Documents\Proyectos_Santander\Codigo\wmi-infinity-pruebas-JP\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 146, in __init__
-    self._dbapi_connection = engine.raw_connection()
-                             ^^^^^^^^^^^^^^^^^^^^^^^
-  File "c:\Users\x982454\Documents\Proyectos_Santander\Codigo\wmi-infinity-pruebas-JP\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 3300, in raw_connection       
-    return self.pool.connect()
-           ^^^^^^^^^^^^^^^^^^^
-  File "c:\Users\x982454\Documents\Proyectos_Santander\Codigo\wmi-infinity-pruebas-JP\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 449, in connect
-    return _ConnectionFairy._checkout(self)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "c:\Users\x982454\Documents\Proyectos_Santander\Codigo\wmi-infinity-pruebas-JP\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 1263, in _checkout
-    fairy = _ConnectionRecord.checkout(pool)
-            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "c:\Users\x982454\Documents\Proyectos_Santander\Codigo\wmi-infinity-pruebas-JP\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 712, in checkout
-    rec = pool._do_get()
-          ^^^^^^^^^^^^^^
-  File "c:\Users\x982454\Documents\Proyectos_Santander\Codigo\wmi-infinity-pruebas-JP\.venv\Lib\site-packages\sqlalchemy\pool\impl.py", line 179, in _do_get
-    with util.safe_reraise():
-  File "c:\Users\x982454\Documents\Proyectos_Santander\Codigo\wmi-infinity-pruebas-JP\.venv\Lib\site-packages\sqlalchemy\util\langhelpers.py", line 146, in __exit__
-    raise exc_value.with_traceback(exc_tb)
-  File "c:\Users\x982454\Documents\Proyectos_Santander\Codigo\wmi-infinity-pruebas-JP\.venv\Lib\site-packages\sqlalchemy\pool\impl.py", line 177, in _do_get
-    return self._create_connection()
-           ^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "c:\Users\x982454\Documents\Proyectos_Santander\Codigo\wmi-infinity-pruebas-JP\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 390, in _create_connection      
-    return _ConnectionRecord(self)
-           ^^^^^^^^^^^^^^^^^^^^^^^
-  File "c:\Users\x982454\Documents\Proyectos_Santander\Codigo\wmi-infinity-pruebas-JP\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 674, in __init__
-    self.__connect()
-  File "c:\Users\x982454\Documents\Proyectos_Santander\Codigo\wmi-infinity-pruebas-JP\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 914, in __connect
-    )._exec_w_sync_on_first_run(self.dbapi_connection, self)
-      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "c:\Users\x982454\Documents\Proyectos_Santander\Codigo\wmi-infinity-pruebas-JP\.venv\Lib\site-packages\sqlalchemy\event\attr.py", line 483, in _exec_w_sync_on_first_run
-    self(*args, **kw)
-  File "c:\Users\x982454\Documents\Proyectos_Santander\Codigo\wmi-infinity-pruebas-JP\.venv\Lib\site-packages\sqlalchemy\event\attr.py", line 497, in __call__
-    fn(*args, **kw)
-  File "c:\Users\x982454\Documents\Proyectos_Santander\Codigo\wmi-infinity-pruebas-JP\.venv\Lib\site-packages\sqlalchemy\util\langhelpers.py", line 1912, in go
-    return once_fn(*arg, **kw)
-           ^^^^^^^^^^^^^^^^^^^
-  File "c:\Users\x982454\Documents\Proyectos_Santander\Codigo\wmi-infinity-pruebas-JP\.venv\Lib\site-packages\sqlalchemy\engine\create.py", line 749, in first_connect       
-    dialect.initialize(c)
-  File "c:\Users\x982454\Documents\Proyectos_Santander\Codigo\wmi-infinity-pruebas-JP\.venv\Lib\site-packages\sqlalchemy\dialects\postgresql\psycopg2.py", line 677, in initialize
-    super().initialize(connection)
-  File "c:\Users\x982454\Documents\Proyectos_Santander\Codigo\wmi-infinity-pruebas-JP\.venv\Lib\site-packages\sqlalchemy\dialects\postgresql\base.py", line 3120, in initialize
-    self._set_backslash_escapes(connection)
-  File "c:\Users\x982454\Documents\Proyectos_Santander\Codigo\wmi-infinity-pruebas-JP\.venv\Lib\site-packages\sqlalchemy\dialects\postgresql\base.py", line 5004, in _set_backslash_escapes
-    std_string = connection.exec_driver_sql(
-                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "c:\Users\x982454\Documents\Proyectos_Santander\Codigo\wmi-infinity-pruebas-JP\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1779, in exec_driver_sql      
-    ret = self._execute_context(
-          ^^^^^^^^^^^^^^^^^^^^^^
-  File "c:\Users\x982454\Documents\Proyectos_Santander\Codigo\wmi-infinity-pruebas-JP\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1846, in _execute_context     
-    return self._exec_single_context(
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "c:\Users\x982454\Documents\Proyectos_Santander\Codigo\wmi-infinity-pruebas-JP\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1986, in _exec_single_context 
-    self._handle_dbapi_exception(
-  File "c:\Users\x982454\Documents\Proyectos_Santander\Codigo\wmi-infinity-pruebas-JP\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 2353, in _handle_dbapi_exception
-    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
-  File "c:\Users\x982454\Documents\Proyectos_Santander\Codigo\wmi-infinity-pruebas-JP\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1967, in _exec_single_context 
-    self.dialect.do_execute(
-  File "c:\Users\x982454\Documents\Proyectos_Santander\Codigo\wmi-infinity-pruebas-JP\.venv\Lib\site-packages\sqlalchemy\engine\default.py", line 924, in do_execute
-    cursor.execute(statement, parameters)
-sqlalchemy.exc.ProgrammingError: (psycopg2.errors.UndefinedObject) unrecognized configuration parameter "standard_conforming_strings"
-
-[SQL: show standard_conforming_strings]
-(Background on this error at: https://sqlalche.me/e/20/f405)
+  File "c:\Users\x982454\Documents\Proyectos_Santander\Codigo\wmi-infinity-pruebas-JP\main.py", line 28, in <module>
+    df = pd.read_sql_query(query, connection)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\x982454\Documents\Proyectos_Santander\Codigo\wmi-infinity-pruebas-JP\.venv\Lib\site-packages\pandas\io\sql.py", line 526, in read_sql_query
+    return pandas_sql.read_query(
+           ^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\x982454\Documents\Proyectos_Santander\Codigo\wmi-infinity-pruebas-JP\.venv\Lib\site-packages\pandas\io\sql.py", line 2738, in read_query
+    cursor = self.execute(sql, params)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\x982454\Documents\Proyectos_Santander\Codigo\wmi-infinity-pruebas-JP\.venv\Lib\site-packages\pandas\io\sql.py", line 2672, in execute
+    cur = self.con.cursor()
+          ^^^^^^^^^^^^^^^
+AttributeError: 'Connection' object has no attribute 'cursor'
