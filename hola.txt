@@ -1,1 +1,129 @@
-numpy.dtype size changed, may indicate binary incompatibility. Expected 96 from C header, got 88 from PyObject
+import pandas as pd
+import logging
+import sys
+import os
+import boto3
+
+from sqlalchemy import create_engine, engine
+from sqlalchemy.exc import StatementError
+from botocore.config import Config
+
+proxy_definitions = {
+    'http': 'proxy.sig.umbrella.com:80',
+    'https': 'proxy.sig.umbrella.com:443'
+}
+logger = logging.getLogger()
+logger.setLevel(logging.WARNING)
+
+def get_exchange(dateFrom):
+
+    try:
+        query = """SELECT exc.cod_basecurrency,
+                           exc.per_exchangerate,
+                           DATE(exc.dat_fact) as 'dat_fact',
+                          (SELECT e.per_exchangerate
+                             FROM SAMDataMartPro.dtm_sam_gbl_tb_dd_fac_exchangerate e
+                    	    WHERE e.cod_source = 0
+                              AND e.dat_fact = '20200219'
+                              AND e.cod_exchangecurrency ='EUR'
+                              AND e.cod_basecurrency = exc.cod_basecurrency) as per_exchangeratestart
+                      FROM SAMDataMartPro.dtm_sam_gbl_tb_dd_fac_exchangerate exc
+                     WHERE exc.cod_source = 0
+                       AND exc.cod_exchangecurrency ='EUR'
+                       AND exc.dat_fact >= %(date)s
+                      ORDER BY dat_fact desc,cod_basecurrency asc;
+                """
+
+        others = """
+
+                """
+
+        df = pd.read_sql_query(query, myengine,  params={"date":dateFrom}, index_col=['dat_fact', 'cod_basecurrency'], parse_dates=True)
+
+        assert df.size > 0, "No hay datos para la fecha solicitada"
+
+        return df
+
+    except Exception as e:
+
+        logger.error('Error on get_exchange(): {}'.format(str(e)))
+
+
+def get_params():
+
+    try:
+
+        ssm=boto3.client('ssm', config=Config(proxies=proxy_definitions))
+
+        params = {}
+        params['drivername'] = 'mysql+pymysql'
+        params['username'] = ssm.get_parameter(Name=aurora_username_envar)['Parameter']['Value']
+        params['password'] = ssm.get_parameter(Name=aurora_password_envar, WithDecryption=True)['Parameter']['Value']
+        params['host'] = ssm.get_parameter(Name=aurora_endpoint_envar)['Parameter']['Value']
+        params['database'] = ssm.get_parameter(Name=aurora_database_envar)['Parameter']['Value']
+
+        logger.debug('Successfully retrieved params from SSM')
+
+        return params
+
+    except Exception as e:
+        logger.error('Error on get_params(): {}'.format(str(e)))
+
+def get_cash(query, date):
+
+    logger.debug('Entra get_cash')
+
+    try:
+
+        logger.debug('get_cash - antes df')
+        df = pd.read_sql_query(query, myengine, params={"date":date}, index_col=['cod_country','cod_fundperformance','dat_fact'], parse_dates=True)
+        logger.debug('get_cash - despues df')
+
+        assert df.size > 0, "No hay datos para la fecha solicitada: {}".format(date)
+
+        return df
+
+    except Exception as e:
+
+        logger.error('Error on get_cash(): {}'.format(str(e)))
+
+def clean_table(schema_name, table_name):
+
+    str_truncate = "TRUNCATE TABLE " + schema_name + "." + table_name
+
+    try:
+
+        with myengine.connect() as conn:
+
+            conn.execute(str_truncate)
+
+            logger.debug('Successfully truncated table')
+
+    except:
+        logger.error("Unexpected error:", sys.exc_info()[0])
+        raise
+
+def df_to_db(schema_name, table_name, df_insert):
+
+    try:
+        logger.debug('[Inicio Insert]')
+
+        df_insert.to_sql(name= table_name, schema= schema_name, con= myengine, if_exists='append', index= False, chunksize=1000)
+
+        logger.debug('[Fin Insert]')
+
+    except Exception as e:
+
+        logger.error('Error on df_to_db(): {}'.format(str(e)))
+
+
+aurora_username_envar=os.getenv('aurora_username_envar')
+aurora_password_envar=os.getenv('aurora_password_envar')
+aurora_endpoint_envar=os.getenv('aurora_endpoint_envar')
+aurora_database_envar=os.getenv('aurora_database_envar')
+
+#Obtenemos los parametros de ssm
+params = get_params()
+
+#Establecemos la conexión
+myengine = create_engine(engine.url.URL(**params))
