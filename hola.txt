@@ -1,16 +1,8 @@
-UserWarning: pandas only supports SQLAlchemy connectable (engine/connection) or database string URI or sqlite3 DBAPI2 connection. Other DBAPI2 objects are not tested. Please consider using SQLAlchemy.
-  df = pd.read_sql_query(query, connection)
-Traceback (most recent call last):
-  File "c:\Users\x982454\Documents\Proyectos_Santander\Codigo\wmi-infinity-pruebas-JP\main.py", line 28, in <module>
-    df = pd.read_sql_query(query, connection)
-         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "c:\Users\x982454\Documents\Proyectos_Santander\Codigo\wmi-infinity-pruebas-JP\.venv\Lib\site-packages\pandas\io\sql.py", line 526, in read_sql_query
-    return pandas_sql.read_query(
-           ^^^^^^^^^^^^^^^^^^^^^^
-  File "c:\Users\x982454\Documents\Proyectos_Santander\Codigo\wmi-infinity-pruebas-JP\.venv\Lib\site-packages\pandas\io\sql.py", line 2738, in read_query
-    cursor = self.execute(sql, params)
-             ^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "c:\Users\x982454\Documents\Proyectos_Santander\Codigo\wmi-infinity-pruebas-JP\.venv\Lib\site-packages\pandas\io\sql.py", line 2672, in execute
-    cur = self.con.cursor()
-          ^^^^^^^^^^^^^^^
-AttributeError: 'Connection' object has no attribute 'cursor'
+An error occurred when executing the SQL command:
+select *
+from SAMDataMartPro.dst_sam_per_tb_dd_fac_netsales
+
+Zero date value prohibited
+1 statement failed.
+
+Execution time: 12.33s
