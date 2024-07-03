@@ -1,8 +1,1 @@
-An error occurred when executing the SQL command:
-select *
-from SAMDataMartPro.dst_sam_per_tb_dd_fac_netsales
-
-Zero date value prohibited
-1 statement failed.
-
-Execution time: 12.33s
+GRANT UPDATE, DELETE, REFERENCES, INSERT, SELECT ON SAMDataMartPre.dst_sam_per_tb_dd_fac_netsales TO rw_lambda@%;
