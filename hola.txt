@@ -1,14 +1,1 @@
-SELECT exc.cod_basecurrency,
-                           exc.per_exchangerate,
-                           DATE(exc.dat_fact) as 'dat_fact',
-      (SELECT e.per_exchangerate
-         FROM SAMDataMartPre.dtm_sam_gbl_tb_dd_fac_exchangerate e
-	    WHERE e.cod_source = 0
-          AND e.dat_fact = '20200219'
-          AND e.cod_exchangecurrency ='EUR'
-          AND e.cod_basecurrency = exc.cod_basecurrency) as per_exchangeratestart
-  FROM SAMDataMartPre.dtm_sam_gbl_tb_dd_fac_exchangerate exc
- WHERE exc.cod_source = 0
-   AND exc.cod_exchangecurrency ='EUR'
-   AND exc.dat_fact >= '20220101'
-  ORDER BY dat_fact desc,cod_basecurrency asc;
+SQL Error [1064] [42000]: You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '(PARTITION BY cod_source, dat_fact, cod_exchangecurrency, cod_basecurrency ORDER' at line 7
