@@ -1,1 +1,3 @@
-SQL Error [1064] [42000]: You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '(PARTITION BY cod_source, dat_fact, cod_exchangecurrency, cod_basecurrency ORDER' at line 7
+SQL Error [1064] [42000]: You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '(PARTITION BY cod_source, dat_fact, cod_exchangecurrency, cod_basecurrency ORDER' at line 6
+
+Error position: line: 5
