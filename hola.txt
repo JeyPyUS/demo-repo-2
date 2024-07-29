@@ -1,12 +1,7 @@
-et_xmlfile==1.1.0
-greenlet
-openpyxl==3.0.9
-pandas==1.5.3
-pymysql==0.9.3
-numpy==1.26.4
-pytz==2021.1
-sqlalchemy==1.4.36
-xlrd==2.0.1
-boto3==1.34.42
-typing-extensions==4.12.2
-psycopg2-binary==2.9.6
+SELECT per_exchangerate, COUNT(*)
+FROM SAMDataMartPre.dtm_sam_gbl_tb_dd_fac_exchangerate
+WHERE cod_source = 0
+  AND dat_fact = '20200219'
+  AND cod_exchangecurrency ='EUR'
+GROUP BY per_exchangerate
+HAVING COUNT(*) > 1;
