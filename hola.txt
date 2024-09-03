@@ -1,7 +1,417 @@
-SELECT per_exchangerate, COUNT(*)
-FROM SAMDataMartPre.dtm_sam_gbl_tb_dd_fac_exchangerate
-WHERE cod_source = 0
-  AND dat_fact = '20200219'
-  AND cod_exchangecurrency ='EUR'
-GROUP BY per_exchangerate
-HAVING COUNT(*) > 1;
+SELECT
+    "ClassID",
+    TO_CHAR(TO_DATE("DistribDate", 'yyyy-mm-dd'), 'dd/mm/yyyy') "DistribDate",
+    "CodClass",
+    "SegmentName",
+    "Weight"
+FROM (
+-- ASSET CLASS DISTRIBUTION
+SELECT DISTINCT cm.cod_classinfinity AS "ClassID",
+                '{date_of_data_posglo}' AS "DistribDate",
+                'Asset Allocation' AS "CodClass",
+                assetclass.name AS "SegmentName",
+                assetclass.weight AS "Weight"
+FROM sam_dwh.dwh_sam_mts_tb_mm_dim_classmaster cm
+LEFT JOIN sam_dwh.dwh_sam_mts_tb_mm_dim_fundmaster fm ON cm.cod_fundinfinity = fm.cod_fundinfinity
+LEFT JOIN (SELECT DISTINCT cod_acccode, cod_boacccode, flg_scdactive
+FROM sam_dwh.dwh_sam_cla_tb_mm_fac_samoa) samoa ON ((fm.cod_fundperformance = samoa.cod_boacccode) OR (fm.cod_fundbo = samoa.cod_boacccode) OR (fm.cod_funddb = samoa.cod_boacccode)) AND samoa.flg_scdactive
+LEFT JOIN sam_dwh.dwh_sam_pos_tb_mm_fac_posglofactsheet hol ON samoa.cod_acccode = hol.cod_portfolio
+LEFT JOIN
+    (SELECT AssetG.cod_portfolio
+        , CASE WHEN not AssetG.per_weight IS NULL THEN AssetG.des_name
+            ELSE AssetG.Asset_Type END AS name
+        , SUM (CASE WHEN not AssetG.per_weight IS NULL THEN ROUND(per_nav,8) * ROUND(per_weight/100,8)
+            ELSE per_nav END) AS weight
+    FROM
+        (SELECT
+            hol.cod_portfolio
+            , CASE WHEN not hol.cod_isin IS NULL THEN hol.cod_isin
+                ELSE CASE WHEN not hol.cod_sedol IS NULL THEN hol.cod_sedol ELSE hol.cod_cusip END END AS cod_instr
+            , CASE WHEN hol.per_navadj IS NULL OR hol.per_navadj = 0 THEN hol.per_nav ELSE hol.per_navadj END AS per_nav
+            , CASE WHEN hol.cod_secgroup = 'ABS' THEN 'Fixed Income'
+                WHEN hol.cod_secgroup = 'EQUITY' AND (hol.des_smsec2 IN ('ETC') OR hol.des_smsec2 LIKE 'ETF%%') THEN 'ETF'
+                WHEN hol.cod_secgroup = 'BND' THEN 'Fixed Income'
+                WHEN hol.cod_secgroup = 'CASH' THEN 'Cash'
+                WHEN hol.cod_secgroup = 'CASH' AND hol.cod_sectype = 'TBILL' THEN 'Fixed Income'
+                WHEN hol.cod_secgroup = 'CASH' AND hol.cod_sectype = 'CP' THEN 'Fixed Income'
+                WHEN hol.cod_secgroup = 'CASH' AND hol.cod_sectype = 'AGENCY' THEN 'Fixed Income'
+                WHEN hol.cod_secgroup = 'CMBS' THEN 'Fixed Income'
+                WHEN hol.cod_secgroup = 'CMO' THEN 'Fixed Income'
+                WHEN hol.cod_secgroup = 'EQUITY' THEN 'Equity'
+                WHEN hol.cod_secgroup = 'FUND' THEN 'Fund'
+                WHEN hol.cod_secgroup = 'FUTURE' THEN 'Derivatives'
+                WHEN hol.cod_secgroup = 'FX' THEN 'Cash'
+                WHEN hol.cod_secgroup = 'IBND' THEN 'Fixed Income'
+                WHEN hol.cod_secgroup = 'MBS' THEN 'Fixed Income'
+                WHEN hol.cod_secgroup = 'OPTION' THEN 'Derivatives'
+                WHEN hol.cod_secgroup = 'SWAP' THEN 'Derivatives'
+                WHEN hol.cod_secgroup = 'SYNTH' THEN 'Derivatives'
+            else
+            hol.cod_secgroup END AS Asset_Type
+            , lasset.des_name
+            , lasset.per_weight
+        FROM sam_dwh.dwh_sam_pos_tb_mm_fac_posglofactsheet hol
+            LEFT JOIN (SELECT lip.cod_isin, lip.cod_sedol, dev.cod_lipper, dev.dat_fact, dev.des_name, dev.per_weight
+                        FROM sam_dwh.dwh_sam_ind_tb_mm_fac_lipderivedalloc dev
+                            INNER JOIN sam_dwh.dwh_sam_ind_tb_mm_dim_lipclassmaster lip ON dev.cod_lipper = lip.cod_lipper
+                        WHERE dev.des_allocationtype = 'Asset Allocation'
+                            AND dev.dat_fact = (SELECT max(dev1.dat_fact) FROM sam_dwh.dwh_sam_ind_tb_mm_fac_lipderivedalloc dev1
+                                                WHERE dev1.cod_lipper = dev.cod_lipper)) AS lasset ON
+                                                                CASE WHEN hol.cod_secgroup = 'FUND'
+                                                                    OR (hol.cod_secgroup = 'EQUITY' AND (hol.des_smsec2 IN ('ETC') OR hol.des_smsec2 LIKE 'ETF%%'))
+                                                                    THEN
+                                                                        CASE WHEN NOT hol.cod_isin IS NULL THEN hol.cod_isin = lasset.cod_isin
+                                                                                                            ELSE hol.cod_sedol = lasset.cod_sedol END
+                                                                    ELSE lasset.cod_isin = 'XXXXXXX' END
+        WHERE hol.dat_fact = '{date_of_data_posglo}') AS AssetG
+    GROUP BY 1,2) assetclass ON assetclass.cod_portfolio = hol.cod_portfolio AND assetclass.weight IS NOT NULL AND assetclass.weight <> 0
+WHERE cm.flg_scdactive
+  AND fm.flg_scdactive
+  and fm.cod_country = 'PRT'
+  and fm.des_type = 'Fundo de Investimento'
+  AND hol.dat_fact = '{date_of_data_posglo}'
+-- END ASSET CLASS DISTRIBUTION
+UNION ALL
+-- SECTOR DISTRIBUTION
+SELECT DISTINCT cm.cod_classinfinity AS "ClassID",
+                '{date_of_data_posglo}' AS "DistribDate",
+                'Sector Breakdown' AS "CodClass",
+                sectoralloc.name AS "SegmentName",
+                sectoralloc.weight AS "Weight"
+FROM sam_dwh.dwh_sam_mts_tb_mm_dim_classmaster cm
+LEFT JOIN sam_dwh.dwh_sam_mts_tb_mm_dim_fundmaster fm ON cm.cod_fundinfinity = fm.cod_fundinfinity
+LEFT JOIN (select distinct cod_acccode, cod_boacccode, flg_scdactive
+from sam_dwh.dwh_sam_cla_tb_mm_fac_samoa) samoa ON ((fm.cod_fundperformance = samoa.cod_boacccode) OR (fm.cod_fundbo = samoa.cod_boacccode) OR (fm.cod_funddb = samoa.cod_boacccode)) and samoa.flg_scdactive
+LEFT JOIN sam_dwh.dwh_sam_pos_tb_mm_fac_posglofactsheet hol ON samoa.cod_acccode = hol.cod_portfolio
+LEFT JOIN
+  (SELECT SectorG.cod_portfolio
+    , case when not SectorG.per_weight is null then SectorG.des_name
+        else SectorG.sec_sector end as name
+    , sum (case when not SectorG.per_weight is null then round(SectorG.per_nav,8) * round(SectorG.per_weight/100,8)
+        else SectorG.per_nav end) as weight
+FROM
+(select
+     hol.cod_portfolio
+     , hol.nam_portfoliofullname
+     , hol.dat_fact
+     , case when not hol.cod_isin is null then hol.cod_isin
+        else case when not hol.cod_sedol is null then hol.cod_sedol else hol.cod_cusip end end as cod_instr
+     , case when sec.sec_sector is null then 'Unknown' else sec.sec_sector end as sec_sector
+     , case when hol.per_navadj is null or hol.per_navadj = 0 then hol.per_nav else hol.per_navadj end per_nav
+     , lasset.des_name
+     , lasset.per_weight
+from sam_dwh.dwh_sam_pos_tb_mm_fac_posglofactsheet hol
+    left join (select lip.cod_isin, lip.cod_sedol, dev.cod_lipper, dev.dat_fact, dev.des_name, dev.per_weight
+                from sam_dwh.dwh_sam_ind_tb_mm_fac_lipderivedalloc dev
+                    inner join sam_dwh.dwh_sam_ind_tb_mm_dim_lipclassmaster lip ON dev.cod_lipper = lip.cod_lipper
+                where dev.flg_scdactive and dev.des_allocationtype = 'TRBC Industry Allocation' and lip.flg_scdactive
+                    and dev.dat_fact = (select max(dev1.dat_fact) from sam_dwh.dwh_sam_ind_tb_mm_fac_lipderivedalloc dev1
+                                        where dev1.cod_lipper = dev.cod_lipper
+                                        	and dev1.flg_scdactive)) as lasset
+    ON CASE WHEN hol.cod_secgroup = 'FUND' OR (hol.cod_secgroup = 'EQUITY' AND (hol.des_smsec2 IN ('ETC') OR hol.des_smsec2 LIKE 'ETF%%')) THEN
+            CASE WHEN NOT hol.cod_isin IS NULL THEN hol.cod_isin = lasset.cod_isin ELSE hol.cod_sedol = lasset.cod_sedol END
+        ELSE
+            lasset.cod_isin = 'XXXXXXX' END
+    left join (select sec_main.*
+				from (
+				select case when sec.cod_isin is null and sec.cod_instrumenttype = 'ISN' then sec.cod_instrument else sec.cod_isin end as cod_isin
+					, case when sec.cod_sedol is null and sec.cod_instrumenttype = 'SED' then sec.cod_instrument else sec.cod_sedol end as cod_sedol
+				    , case when sec.des_industrysector is null then
+				            case when sec.des_trbcindustry is null then  'Unknown' else sec.des_trbcindustry end
+				    else sec.des_industrysector end as sec_sector
+				    , row_number() over(partition by case when sec.cod_isin is null and sec.cod_instrumenttype = 'ISN' then sec.cod_instrument else sec.cod_isin end order by sec.dat_fact DESC) as row
+				from sam_dwh.dwh_sam_gbl_tb_mm_fac_securitymaster sec
+				where sec.flg_scdactive and sec.dat_fact = (select max(sec1.dat_fact) from sam_dwh.dwh_sam_gbl_tb_mm_fac_securitymaster sec1
+				                      where sec1.cod_instrument = sec.cod_instrument and sec1.cod_instrumenttype = sec.cod_instrumenttype
+				                      	and sec1.flg_scdactive)
+				) sec_main
+				where sec_main.row = 1
+				      and sec_main.cod_isin is not null) as sec
+            ON sec.cod_isin = hol.cod_isin or sec.cod_sedol = hol.cod_sedol
+where hol.dat_fact = '{date_of_data_posglo}') as SectorG
+GROUP BY 1,2) sectoralloc on sectoralloc.cod_portfolio = hol.cod_portfolio and sectoralloc.weight is not null and sectoralloc.weight <> 0
+WHERE cm.flg_scdactive
+  AND fm.flg_scdactive
+  and fm.cod_country = 'PRT'
+  and fm.des_type = 'Fundo de Investimento'
+  AND hol.dat_fact = '{date_of_data_posglo}'
+-- END SECTOR DISTRIBUTION
+UNION ALL
+-- GEOGRAPHIC DISTRIBUTION
+SELECT DISTINCT cm.cod_classinfinity AS "ClassID",
+                '{date_of_data_posglo}' AS "DistribDate",
+                'Geographical Breakdown' AS "CodClass",
+                countryalloc.name AS "SegmentName",
+                countryalloc.weight AS "Weight"
+FROM sam_dwh.dwh_sam_mts_tb_mm_dim_classmaster cm
+LEFT JOIN sam_dwh.dwh_sam_mts_tb_mm_dim_fundmaster fm ON cm.cod_fundinfinity = fm.cod_fundinfinity
+LEFT JOIN (select distinct cod_acccode, cod_boacccode, flg_scdactive
+from sam_dwh.dwh_sam_cla_tb_mm_fac_samoa) samoa ON ((fm.cod_fundperformance = samoa.cod_boacccode) OR (fm.cod_fundbo = samoa.cod_boacccode) OR (fm.cod_funddb = samoa.cod_boacccode)) and samoa.flg_scdactive
+LEFT JOIN sam_dwh.dwh_sam_pos_tb_mm_fac_posglofactsheet hol ON samoa.cod_acccode = hol.cod_portfolio
+LEFT JOIN
+  (SELECT CountryG.cod_portfolio ,
+       CASE
+           WHEN NOT CountryG.per_weight IS NULL THEN CountryG.des_name
+           ELSE CountryG.sec_country
+       END AS name ,
+       SUM (CASE
+                WHEN NOT CountryG.per_weight IS NULL THEN round(per_nav,8) * round(per_weight/100,8)
+                ELSE per_nav
+            END) AS weight
+FROM
+  (SELECT hol.cod_portfolio ,
+          hol.nam_portfoliofullname ,
+          hol.dat_fact ,
+          CASE
+              WHEN NOT hol.cod_isin IS NULL THEN hol.cod_isin
+              ELSE CASE
+                       WHEN NOT hol.cod_sedol IS NULL THEN hol.cod_sedol
+                       ELSE hol.cod_cusip
+                   END
+          END AS cod_instr ,
+          CASE
+              WHEN sec.sec_country IS NULL THEN 'Unknown'
+              ELSE sec.sec_country
+          END AS sec_country ,
+          case when hol.per_navadj is null or hol.per_navadj = 0 then hol.per_nav else hol.per_navadj end per_nav,
+          lasset.des_name ,
+          lasset.per_weight
+   FROM sam_dwh.dwh_sam_pos_tb_mm_fac_posglofactsheet hol
+   LEFT JOIN
+     (SELECT lip.cod_isin,
+             lip.cod_sedol,
+             dev.cod_lipper,
+             dev.dat_fact,
+             dev.des_name,
+             dev.per_weight
+      FROM sam_dwh.dwh_sam_ind_tb_mm_fac_lipderivedalloc dev
+      INNER JOIN sam_dwh.dwh_sam_ind_tb_mm_dim_lipclassmaster lip ON dev.cod_lipper = lip.cod_lipper
+      WHERE dev.des_allocationtype IN ('Equity Country Allocation','Fixed Income Country Allocation')
+        AND dev.flg_scdactive and lip.flg_scdactive and dev.dat_fact =
+          (SELECT max(dev1.dat_fact)
+           FROM sam_dwh.dwh_sam_ind_tb_mm_fac_lipderivedalloc dev1
+           WHERE dev1.cod_lipper = dev.cod_lipper
+           	and dev1.flg_scdactive)) AS lasset ON
+                CASE WHEN hol.cod_secgroup = 'FUND' OR (hol.cod_secgroup = 'EQUITY' AND (hol.des_smsec2 IN ('ETC') OR hol.des_smsec2 LIKE 'ETF%%')) THEN
+                    CASE WHEN NOT hol.cod_isin IS NULL THEN hol.cod_isin = lasset.cod_isin ELSE hol.cod_sedol = lasset.cod_sedol END
+                ELSE
+                    lasset.cod_isin = 'XXXXXXX' END
+   LEFT JOIN (select sec_main.*
+              from (
+              select case when sec.cod_isin is null and sec.cod_instrumenttype = 'ISN' then sec.cod_instrument else sec.cod_isin end as cod_isin
+                , case when sec.cod_sedol is null and sec.cod_instrumenttype = 'SED' then sec.cod_instrument else sec.cod_sedol end as cod_sedol
+                  , CASE WHEN sec.cod_primaryriskcountry IS NULL THEN
+                              CASE WHEN sec.des_countryissuance IS NULL THEN 'Unknown' ELSE sec.des_countryissuance END
+                              ELSE
+                                  CASE WHEN mc.nam_countryen IS NULL then sec.cod_primaryriskcountry else mc.nam_countryen END
+                              END AS sec_country
+                  , row_number() over(partition by case when sec.cod_isin is null and sec.cod_instrumenttype = 'ISN' then sec.cod_instrument else sec.cod_isin end order by sec.dat_fact DESC) as row
+              from sam_dwh.dwh_sam_gbl_tb_mm_fac_securitymaster sec
+                      left join sam_dwh.dwh_sam_mts_tb_dd_dim_country mc ON sec.cod_primaryriskcountry = mc.cod_countryiso2
+              where sec.flg_scdactive and sec.dat_fact = (select max(sec1.dat_fact) from sam_dwh.dwh_sam_gbl_tb_mm_fac_securitymaster sec1
+                                    where sec1.cod_instrument = sec.cod_instrument and sec1.cod_instrumenttype = sec.cod_instrumenttype
+                                      and sec1.flg_scdactive)
+              ) sec_main
+              where sec_main.row = 1
+                    and sec_main.cod_isin is not null) as sec
+                  ON sec.cod_isin = hol.cod_isin or sec.cod_sedol = hol.cod_sedol
+   WHERE hol.dat_fact = '{date_of_data_posglo}') AS CountryG
+GROUP BY 1,2) countryalloc on countryalloc.cod_portfolio = hol.cod_portfolio and countryalloc.weight is not null and countryalloc.weight <> 0
+WHERE cm.flg_scdactive
+  AND fm.flg_scdactive
+  and fm.cod_country = 'PRT'
+  and fm.des_type = 'Fundo de Investimento'
+  AND hol.dat_fact = '{date_of_data_posglo}'
+-- END GEOGRAPHIC DISTRIBUTION
+UNION ALL
+-- CURRENCY DISTRIBUTION
+SELECT DISTINCT cm.cod_classinfinity AS "ClassID",
+                '{date_of_data_posglo}' AS "DistribDate",
+                'Currency Allocation' AS "CodClass",
+                currencyalloc.name AS "SegmentName",
+                currencyalloc.weight AS "Weight"
+FROM sam_dwh.dwh_sam_mts_tb_mm_dim_classmaster cm
+LEFT JOIN sam_dwh.dwh_sam_mts_tb_mm_dim_fundmaster fm ON cm.cod_fundinfinity = fm.cod_fundinfinity
+LEFT JOIN (select distinct cod_acccode, cod_boacccode, flg_scdactive
+from sam_dwh.dwh_sam_cla_tb_mm_fac_samoa) samoa ON ((fm.cod_fundperformance = samoa.cod_boacccode) OR (fm.cod_fundbo = samoa.cod_boacccode) OR (fm.cod_funddb = samoa.cod_boacccode)) and samoa.flg_scdactive
+LEFT JOIN sam_dwh.dwh_sam_pos_tb_mm_fac_posglofactsheet hol ON samoa.cod_acccode = hol.cod_portfolio
+LEFT JOIN
+  (SELECT CurrencyG.cod_portfolio,
+       CASE
+           WHEN NOT CurrencyG.per_weight IS NULL THEN CurrencyG.des_name
+           ELSE CurrencyG.sec_currency
+       END AS name ,
+       SUM (CASE
+                WHEN NOT CurrencyG.per_weight IS NULL THEN round(per_nav,8) * round(per_weight/100,8)
+                ELSE per_nav
+            END) AS weight
+FROM
+  (SELECT hol.cod_portfolio,
+          CASE
+              WHEN sec.sec_currency IS NULL THEN hol.cod_currency
+              ELSE sec.sec_currency
+          END AS sec_currency ,
+          CASE
+              WHEN hol.per_navadj <> 0 THEN hol.per_navadj
+              ELSE hol.per_nav
+          END per_nav ,
+              lasset.des_name ,
+              lasset.per_weight
+   FROM sam_dwh.dwh_sam_pos_tb_mm_fac_posglofactsheet hol
+   LEFT JOIN
+     (SELECT lip.cod_isin,
+             lip.cod_sedol,
+             dev.cod_lipper,
+             dev.dat_fact,
+             CASE WHEN dev.des_name IS NULL OR dev.des_name LIKE '%%No Currency%%' THEN 'Unknown'
+             ELSE case when not mcur.cod_currencyiso3 is null then mcur.cod_currencyiso3 else dev.des_name end END AS des_name,
+             dev.per_weight
+      FROM sam_dwh.dwh_sam_ind_tb_mm_fac_lipderivedalloc dev
+      INNER JOIN sam_dwh.dwh_sam_ind_tb_mm_dim_lipclassmaster lip ON dev.cod_lipper = lip.cod_lipper
+      LEFT JOIN sam_dwh.dwh_sam_mts_tb_mm_dim_currency mcur ON dev.des_name = mcur.nam_currencyen
+      WHERE dev.des_allocationtype IN ('Currency')
+        AND dev.flg_scdactive
+        AND lip.flg_scdactive
+        AND dev.dat_fact =
+          (SELECT max(dev1.dat_fact)
+           FROM sam_dwh.dwh_sam_ind_tb_mm_fac_lipderivedalloc dev1
+           WHERE dev1.cod_lipper = dev.cod_lipper
+            AND dev1.flg_scdactive)) AS lasset ON
+              CASE WHEN hol.cod_secgroup = 'FUND' OR (hol.cod_secgroup = 'EQUITY' AND (hol.des_smsec2 IN ('ETC') OR hol.des_smsec2 LIKE 'ETF%%')) THEN
+                  CASE WHEN NOT hol.cod_isin IS NULL THEN hol.cod_isin = lasset.cod_isin ELSE hol.cod_sedol = lasset.cod_sedol END
+              ELSE
+                  lasset.cod_isin = 'XXXXXXX' END
+   LEFT JOIN (select sec_main.*
+				from (
+				select case when sec.cod_isin is null and sec.cod_instrumenttype = 'ISN' then sec.cod_instrument else sec.cod_isin end as cod_isin
+					, case when sec.cod_sedol is null and sec.cod_instrumenttype = 'SED' then sec.cod_instrument else sec.cod_sedol end as cod_sedol
+				    , CASE WHEN sec.cod_currency IS NULL OR sec.cod_currency LIKE '%%No Currency%%' THEN 'Unknown' ELSE sec.cod_currency END AS sec_currency
+				    , row_number() over(partition by case when sec.cod_isin is null and sec.cod_instrumenttype = 'ISN' then sec.cod_instrument else sec.cod_isin end order by sec.dat_fact DESC) as row
+				from sam_dwh.dwh_sam_gbl_tb_mm_fac_securitymaster sec
+				where sec.flg_scdactive and sec.dat_fact = (select max(sec1.dat_fact) from sam_dwh.dwh_sam_gbl_tb_mm_fac_securitymaster sec1
+				                      where sec1.cod_instrument = sec.cod_instrument and sec1.cod_instrumenttype = sec.cod_instrumenttype
+				                      	and sec1.flg_scdactive)
+				) sec_main
+				where sec_main.row = 1
+				      and sec_main.cod_isin is not null) as sec
+            ON sec.cod_isin = hol.cod_isin or sec.cod_sedol = hol.cod_sedol
+   WHERE hol.dat_fact = '{date_of_data_posglo}') AS CurrencyG
+GROUP BY 1,2) currencyalloc on currencyalloc.cod_portfolio = hol.cod_portfolio and currencyalloc.weight is not null and currencyalloc.weight <> 0
+WHERE cm.flg_scdactive
+  AND fm.flg_scdactive
+  and fm.cod_country = 'PRT'
+  and fm.des_type = 'Fundo de Investimento'
+  AND hol.dat_fact = '{date_of_data_posglo}'
+-- END CURRENCY DISTRIBUTION
+UNION ALL
+-- MATURITY DISTRIBUTION
+SELECT DISTINCT cm.cod_classinfinity AS "ClassID",
+                '{date_of_data_posglo}' AS "DistribDate",
+                'Maturity Breakdown' AS "CodClass",
+                maturityalloc.name AS "SegmentName",
+                maturityalloc.weight AS "Weight"
+FROM sam_dwh.dwh_sam_mts_tb_mm_dim_classmaster cm
+LEFT JOIN sam_dwh.dwh_sam_mts_tb_mm_dim_fundmaster fm ON cm.cod_fundinfinity = fm.cod_fundinfinity
+LEFT JOIN (select distinct cod_acccode, cod_boacccode, flg_scdactive
+from sam_dwh.dwh_sam_cla_tb_mm_fac_samoa) samoa ON ((fm.cod_fundperformance = samoa.cod_boacccode) OR (fm.cod_fundbo = samoa.cod_boacccode) OR (fm.cod_funddb = samoa.cod_boacccode)) and samoa.flg_scdactive
+LEFT JOIN sam_dwh.dwh_sam_pos_tb_mm_fac_posglofactsheet hol ON samoa.cod_acccode = hol.cod_portfolio
+LEFT JOIN
+  (SELECT MaturityG.cod_portfolio,
+       CASE
+           WHEN NOT MaturityG.per_weight IS NULL THEN MaturityG.des_name
+           ELSE MaturityG.sec_maturity
+       END AS name ,
+       SUM (CASE
+                WHEN NOT MaturityG.per_weight IS NULL THEN round(per_nav,8) * round(per_weight/100,8)
+                ELSE per_nav
+            END) AS weight
+FROM
+  (SELECT hol.cod_portfolio,
+          CASE
+              WHEN NOT hol.cod_isin IS NULL THEN hol.cod_isin
+              ELSE CASE
+                       WHEN NOT hol.cod_sedol IS NULL THEN hol.cod_sedol
+                       ELSE hol.cod_cusip
+                   END
+          END AS cod_instr ,
+          CASE
+              WHEN sec.sec_maturity IS NULL THEN 'Unknown'
+              ELSE sec.sec_maturity
+          END AS sec_maturity ,
+          CASE
+              WHEN hol.per_navadj <> 0 THEN hol.per_navadj
+              ELSE hol.per_nav
+          END per_nav ,
+              lasset.des_name ,
+              lasset.per_weight
+   FROM (select hol.*
+        from sam_dwh.dwh_sam_pos_tb_mm_fac_posglofactsheet hol
+        where (hol.cod_secgroup IN ('ABS', 'BND','CMBS','CMO','IBND','MBS')
+          OR hol.cod_sectype = 'FIN')
+        union all
+        select hol.*
+        from sam_dwh.dwh_sam_pos_tb_mm_fac_posglofactsheet hol
+        INNER JOIN sam_dwh.dwh_sam_ind_tb_mm_dim_lipclassmaster lip ON hol.cod_isin = lip.cod_isin
+        inner join sam_dwh.dwh_sam_ind_tb_mm_dim_lipmultiple lipassettype ON lip.cod_lipper = lipassettype.cod_lipper
+            and lipassettype.cod_originalfield = '1001034' and lipassettype.cod_originalvalue IN ('1001037', '1040099') and lipassettype.flg_scdactive
+        where cod_secgroup = 'FUND') hol
+   LEFT JOIN
+     (SELECT lip.cod_isin,
+             lip.cod_sedol,
+             dev.cod_lipper,
+             dev.dat_fact,
+             dev.des_name,
+             dev.per_weight
+      FROM sam_dwh.dwh_sam_ind_tb_mm_fac_lipderivedalloc dev
+      INNER JOIN sam_dwh.dwh_sam_ind_tb_mm_dim_lipclassmaster lip ON dev.cod_lipper = lip.cod_lipper
+      inner join sam_dwh.dwh_sam_ind_tb_mm_dim_lipmultiple lipassettype ON lip.cod_lipper = lipassettype.cod_lipper
+                        and lipassettype.cod_originalfield = '1001034' and lipassettype.cod_originalvalue IN ('1001037', '1040099') and lipassettype.flg_scdactive
+      WHERE dev.des_allocationtype IN ('Maturity')
+        AND dev.flg_scdactive
+        and lip.flg_scdactive
+        AND dev.dat_fact =
+          (SELECT max(dev1.dat_fact)
+           FROM sam_dwh.dwh_sam_ind_tb_mm_fac_lipderivedalloc dev1
+           WHERE dev1.cod_lipper = dev.cod_lipper
+            AND dev1.flg_scdactive)) AS lasset ON
+                CASE WHEN hol.cod_secgroup = 'FUND' OR (hol.cod_secgroup = 'EQUITY' AND (hol.des_smsec2 IN ('ETC') OR hol.des_smsec2 LIKE 'ETF%%')) THEN
+                    CASE WHEN NOT hol.cod_isin IS NULL THEN hol.cod_isin = lasset.cod_isin ELSE hol.cod_sedol = lasset.cod_sedol END
+                ELSE
+                    lasset.cod_isin = 'XXXXXXX' END
+   LEFT JOIN (select sec_main.*
+				from (
+				select case when sec.cod_isin is null and sec.cod_instrumenttype = 'ISN' then sec.cod_instrument else sec.cod_isin end as cod_isin
+					, case when sec.cod_sedol is null and sec.cod_instrumenttype = 'SED' then sec.cod_instrument else sec.cod_sedol end as cod_sedol
+          , CASE
+                WHEN sec.dat_maturity IS NULL THEN 'Unknown'
+                WHEN sec.dat_maturity < CAST(DATEADD('year', 1, CURRENT_DATE) AS DATE) THEN '%% Maturity Less than 1 Year'
+                WHEN sec.dat_maturity BETWEEN CAST(DATEADD('year', 1, CURRENT_DATE) AS DATE) AND CAST(DATEADD('year', 3, CURRENT_DATE) AS DATE) THEN '%% Maturity 1 to 3 Years'
+                WHEN sec.dat_maturity BETWEEN CAST(DATEADD('year', 3, CURRENT_DATE) AS DATE) AND CAST(DATEADD('year', 5, CURRENT_DATE) AS DATE) THEN '%% Maturity 3 to 5 Years'
+                WHEN sec.dat_maturity BETWEEN CAST(DATEADD('year', 5, CURRENT_DATE) AS DATE) AND CAST(DATEADD('year', 10, CURRENT_DATE) AS DATE) THEN '%% Maturity 5 to 10 Years'
+                WHEN sec.dat_maturity BETWEEN CAST(DATEADD('year', 10, CURRENT_DATE) AS DATE) AND CAST(DATEADD('year', 20, CURRENT_DATE) AS DATE) THEN '%% Maturity 10 to 20 Years'
+                WHEN sec.dat_maturity BETWEEN CAST(DATEADD('year', 20, CURRENT_DATE) AS DATE) AND CAST(DATEADD('year', 30, CURRENT_DATE) AS DATE) THEN '%% Maturity 20 to 30 Years'
+                WHEN sec.dat_maturity > CAST(DATEADD('year', 30, CURRENT_DATE) AS DATE) THEN '%% Maturity Greater than 30 Years'
+            END AS sec_maturity
+				  , row_number() over(partition by case when sec.cod_isin is null and sec.cod_instrumenttype = 'ISN' then sec.cod_instrument else sec.cod_isin end order by sec.dat_fact DESC) as row
+				from sam_dwh.dwh_sam_gbl_tb_mm_fac_securitymaster sec
+				where sec.flg_scdactive and sec.dat_fact = (select max(sec1.dat_fact) from sam_dwh.dwh_sam_gbl_tb_mm_fac_securitymaster sec1
+				                      where sec1.cod_instrument = sec.cod_instrument and sec1.cod_instrumenttype = sec.cod_instrumenttype
+				                      	and sec1.flg_scdactive)
+				) sec_main
+				where sec_main.row = 1
+				      and sec_main.cod_isin is not null) as sec
+            ON sec.cod_isin = hol.cod_isin or sec.cod_sedol = hol.cod_sedol
+   WHERE hol.dat_fact = '{date_of_data_posglo}'
+      AND (hol.cod_secgroup IN ('ABS', 'BND','CMBS','CMO','IBND','MBS')
+          OR hol.cod_sectype = 'FIN')) AS MaturityG
+GROUP BY 1,2) maturityalloc on maturityalloc.cod_portfolio = hol.cod_portfolio and maturityalloc.weight is not null and maturityalloc.weight <> 0
+WHERE cm.flg_scdactive
+  and fm.flg_scdactive
+  and fm.cod_country = 'PRT'
+  and fm.des_type = 'Fundo de Investimento'
+  AND hol.dat_fact = '{date_of_data_posglo}'
+-- ENDMATURITY DISTRIBUTION
+)
+WHERE "Weight" is not null
+ORDER BY 1,3
+;
