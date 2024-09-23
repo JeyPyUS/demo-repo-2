@@ -1,2 +1,1 @@
-df_dat_gen_ytm_calcs['ytm_calc'] = df_dat_gen_ytm_calcs.apply(
-            lambda x: x['per_ytm'] * (x['per_nav']/100), axis=1)
+https://teams.microsoft.com/l/meetup-join/19%3ameeting_ZDUyNDU2YmItNTQ4ZS00NDJiLWIwZDMtMGQ1ZjgyODcwMTBi%40thread.v2/0?context=%7b%22Tid%22%3a%2235595a02-4d6d-44ac-99e1-f9ab4cd872db%22%2c%22Oid%22%3a%224cc5320a-c807-46b1-8df9-651e34804c4a%22%7d
