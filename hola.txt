@@ -1,10 +1,2 @@
-https://teams.microsoft.com/l/meetup-join/19%3ameeting_ZDUyNDU2YmItNTQ4ZS00NDJiLWIwZDMtMGQ1ZjgyODcwMTBi%40thread.v2/0?context=%7b%22Tid%22%3a%2235595a02-4d6d-44ac-99e1-f9ab4cd872db%22%2c%22Oid%22%3a%224cc5320a-c807-46b1-8df9-651e34804c4a%22%7d
-
-https://passwordreset.microsoftonline.com/
-
-
-258!Oil2
- 
-https://teams.microsoft.com/l/meetup-join/19%3ameeting_Njg2MjMyNmEtNzU2YS00YmNmLThhNmYtMGU0NDZmNWU5OWI0%40thread.v2/0?context=%7b%22Tid%22%3a%2235595a02-4d6d-44ac-99e1-f9ab4cd872db%22%2c%22Oid%22%3a%2245123319-5c1b-4ad9-b08d-6795b6cc7bf6%22%7d
-
-9Pisgah&town
+df_data['dat_fact'] = pd.to_datetime(df_data['dat_fact'],infer_datetime_format=True,
+                                             format="%d/%m/%Y", exact= False)
