@@ -1,2 +1,2 @@
-df_data['dat_fact'] = pd.to_datetime(df_data['dat_fact'],infer_datetime_format=True,
-                                             format="%d/%m/%Y", exact= False)
+mth_datetime = MonthEnd(0).rollforward(fecha - relativedelta.relativedelta(
+        months=1))
