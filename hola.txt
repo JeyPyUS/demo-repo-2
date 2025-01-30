@@ -1,96 +1,11 @@
-select distinct
-  a.cod_classinfinity,
-  coalesce(a.cod_classunique,NULL) as "cod_unique",
-  coalesce(a.cod_classinfinity,NULL) as "cod_classinfinity",
-  coalesce(cm.cod_classindustry,NULL) as "cod_classindustry",
-  coalesce(cm.cod_classperformance,NULL) as "cod_classperformance",
-  coalesce(cm.cod_classdb,NULL) as "cod_classdb",
-  coalesce(cm.cod_isin,NULL) as "cod_isin",
-  coalesce(cm.cod_dgs,NULL) as "cod_dgs",
-  coalesce(decode(cm.flg_activeclass,1,'true','false'),NULL) as "flg_activeclass",
-  coalesce(cm.cod_invvehicleclasscont,NULL) as "cod_invvehicleclasscont",
-  coalesce(cm.cod_invvehicleclass,NULL) as "cod_invvehicleclass",
-  coalesce(cm.nam_class,NULL) as "nam_class",
-  coalesce(cm.dat_settlement,NULL) as "dat_settlement",
-  coalesce(cm.cod_ptn,NULL) as "cod_ptn",
-  coalesce(cm.cod_subptn,NULL) as "cod_subptn",
-  coalesce(cm.cod_currency,NULL) as "cod_currency",
-  coalesce(cm.nam_riskprofile,NULL) as "nam_riskprofile",
-  coalesce(cm.cod_custodian,NULL) as "cod_custodian",
-  coalesce(c.cod_status_trans,NULL) as "cod_status",
-  coalesce(decode(cm.flg_hedge,1,'true','false'),NULL) as "flg_hedge",
-  coalesce(cm.dat_inceptionshare,NULL) as "dat_inceptionshare",
-  coalesce(cm.imp_launchprice(18,5),NULL) as "imp_launchprice",
-  coalesce(replace(replace(replace(c.des_distributionfreq_trans,'\"',chr(92)+'\"'),chr(10),''),chr(09),chr(92)+'t'),NULL) as "des_distributionfreq",
-  coalesce(cm.imp_firstcalcnav(19,5),NULL) as "imp_firstcalcnav",
-  coalesce(cm.dat_firstcalcnav,NULL) as "dat_firstcalcnav",
-  coalesce(decode(cm.flg_rdrcompliant,1,'true','false'),NULL) as "flg_rdrcompliant",
-  coalesce(cm.des_countries,NULL) as "des_countries",
-  coalesce(cm.cod_tickerbloomberg,NULL) as "cod_tickerbloomberg",
-  coalesce(c.des_clienttype2_trans,NULL) as "des_clienttype2",
-  coalesce(cm.des_kneipclienttype,NULL) as "des_kneipclienttype",
-  coalesce(cm.cod_shareclass,NULL) as "cod_shareclass",
-  coalesce(cm.des_distrfreqkneip,NULL) as "des_distrfreqkneip",
-  coalesce(cm.des_countrieskneip,NULL) as "des_countrieskneip",
-  coalesce(cm.cod_jpmorganclass,NULL) as "cod_jpmorganclass",
-  coalesce(cm.cod_wkn,NULL) as "cod_wkn",
-  coalesce(cm.des_stockexchange,NULL) as "des_stockexchange",
-  coalesce(c.des_invstatuskneip_trans,NULL) as "des_invstatuskneip",
-  coalesce(cm.des_germantaxcat,NULL) as "des_germantaxcat",
-  coalesce(cm.dat_regulatoryapprov,NULL) as "dat_regulatoryapprov",
-  coalesce(replace(replace(replace(c.des_minholding_trans,'\"',chr(92)+'\"'),chr(10),''),chr(09),chr(92)+'t'),NULL) as "des_minholding",
-  coalesce(replace(replace(replace(c.des_plantype_trans,'\"',chr(92)+'\"'),chr(10),''),chr(09),chr(92)+'t'),NULL) as "des_plantype",
-  coalesce(replace(replace(replace(cm.des_changepolitics,'\"',chr(92)+'\"'),chr(10),''),chr(09),chr(92)+'t'),NULL) as "des_changepolitics",
-  coalesce(cm.dat_changemgtiic,NULL) as "dat_changemgtiic",
-  coalesce(replace(replace(replace(cm.des_guardian,'\"',chr(92)+'\"'),chr(10),''),chr(09),chr(92)+'t'),NULL) as "des_guardian",
-  coalesce(cm.des_mininvestment,NULL) as "des_mininvestment",
-  coalesce(c.des_investmperiod_trans,NULL) as "des_investmperiod",
-  coalesce(cm.des_auditor,NULL) as "des_auditor",
-  coalesce(cm.des_vehicletype,NULL) as "des_vehicletype",
-  coalesce(cm.des_dividendpaydate,NULL) as "des_dividendpaydate",
-  coalesce(c.nam_clienttype_trans,NULL) as "nam_clienttype",
-  coalesce(cm.des_gdistributfreq,NULL) as "des_gdistributfreq",
-  coalesce(c.nam_accumulative_trans,NULL) as "nam_accumulative",
-  coalesce(replace(replace(replace(c.des_lprenotice_trans,'\"',chr(92)+'\"'),chr(10),''),chr(09),chr(92)+'t'),NULL) as "des_lprenotice",
-  coalesce(replace(replace(replace(c.nam_gprenotice_trans,'\"',chr(92)+'\"'),chr(10),''),chr(09),chr(92)+'t'),NULL) as "nam_gprenotice",
-  coalesce(cm.des_distraccumkneip,NULL) as "des_distraccumkneip",
-  coalesce(cm.dat_startshare,NULL) as "dat_startshare",
-  coalesce(cm.dat_startinherit,NULL) as "dat_startinherit",
-  coalesce(cm.dat_inceptioninherit,NULL) as "dat_inceptioninherit",
-  coalesce(c.des_capitalization_trans,NULL) as "des_capitalization",
-  coalesce(cm.des_clasification,NULL) as "des_clasification",
-  coalesce(cm.des_affiliatedfund,NULL) as "des_affiliatedfund",
-  coalesce(replace(replace(replace(cm.des_promoter,'\"',chr(92)+'\"'),chr(10),''),chr(09),chr(92)+'t'),NULL) as "des_promoter",
-  coalesce(replace(replace(replace(cm.des_keyaspectsPT,'\"',chr(92)+'\"'),chr(10),''),chr(09),chr(92)+'t'),NULL) as "des_keyaspects",
-  coalesce(decode(cm.flg_commercializable,1,'true','false'),NULL) as "flg_commercializable",
-  coalesce(cm.des_redemptionquot,NULL) as "des_redemptionquot",
-  coalesce(cm.des_subscriptionquot,NULL) as "des_subscriptionquot",
-  coalesce(cm.dat_lastval,NULL) as "dat_lastval",
-  coalesce(replace(replace(replace(cm.des_taxbenefitsPT,'\"',chr(92)+'\"'),chr(10),''),chr(09),chr(92)+'t'),NULL) as "des_taxbenefits",
-  coalesce(replace(replace(replace(cm.des_riskcoveragePT,'\"',chr(92)+'\"'),chr(10),''),chr(09),chr(92)+'t'),NULL) as "des_riskcoverage",
-  coalesce(cm.des_redemptionliq,NULL) as "des_redemptionliq",
-  coalesce(cm.des_subscriptionliq,NULL) as "des_subscriptionliq",
-  coalesce(cm.des_tags,NULL) as "des_tags"
-
-from TMP_SAM_FULL_CLASES_JSON_JPU_29012025 a
-
-left join sam_dwh.dwh_sam_mts_tb_mm_dim_classmaster cm
-on (a.cod_classinfinity=cm.cod_classinfinity)
-
-left join sam_dwh.dwh_sam_mts_tb_mm_dic_classmaster c
-on 
-coalesce(c.nam_gprenotice,'') = coalesce(cm.nam_gprenotice,'') and
-coalesce(c.nam_clienttype,'') = coalesce(cm.nam_clienttype,'') and 
-coalesce(c.nam_accumulative,'') = coalesce(cm.nam_accumulative,'') and
-coalesce(c.des_plantype,'') = coalesce(cm.des_plantype,'') and 
-coalesce(c.des_minholding,'') = coalesce(cm.des_minholding,'') and
-coalesce(c.des_lprenotice,'') = coalesce(cm.des_lprenotice,'') and 
-coalesce(c.des_invstatuskneip,'') = coalesce(cm.des_invstatuskneip,'') and
-coalesce(c.des_investmperiod,'') = coalesce(cm.des_investmperiod,'') and 
-coalesce(c.des_distributionfreq,'') = coalesce(cm.des_distributionfreq,'') and
-coalesce(c.des_clienttype2,'') = coalesce(cm.des_clienttype2,'') and 
-coalesce(c.des_capitalization,'') = coalesce(cm.des_capitalization,'') and
-coalesce(c.cod_status,'') = coalesce(cm.cod_status,'')
-
-where (cm.flg_scdactive  or cm.flg_scdactive is null) 
-and (c.cod_language='PT' or c.cod_language is null);
+with engine.begin() as conn:
+      df.to_sql(
+        table_name
+        , conn
+        , index = False
+        , if_exists = if_exists
+        , schema = schema_name
+        , method = 'multi'
+        , chunksize = 10000
+        , dtype = dtypes
+      )
