@@ -1,11 +1,1 @@
-with engine.begin() as conn:
-      df.to_sql(
-        table_name
-        , conn
-        , index = False
-        , if_exists = if_exists
-        , schema = schema_name
-        , method = 'multi'
-        , chunksize = 10000
-        , dtype = dtypes
-      )
+select dat_fact, cod_classinfinity, count(*) from sam_dwh.dwh_sam_prf_tb_dd_fac_perfrealreturnclass where flg_scdactive  group by dat_fact, cod_classinfinity having count(*)>1;
