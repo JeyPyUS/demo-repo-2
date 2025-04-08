@@ -1,1 +1,5 @@
-select dat_fact, cod_classinfinity, count(*) from sam_dwh.dwh_sam_prf_tb_dd_fac_perfrealreturnclass where flg_scdactive  group by dat_fact, cod_classinfinity having count(*)>1;
+Error del origen de datos: {"error":{"code":"DM_GWPipeline_Gateway_MashupDataAccessError","pbi.error":{"code":"DM_GWPipeline_Gateway_MashupDataAccessError","parameters":{},"details":[{"code":"DM_ErrorDetailNameCode_UnderlyingErrorCode","detail":{"type":1,"value":"-2147467259"}},{"code":"DM_ErrorDetailNameCode_UnderlyingErrorMessage","detail":{"type":1,"value":"We're sorry, an error occurred during evaluation."}},{"code":"DM_ErrorDetailNameCode_UnderlyingHResult","detail":{"type":1,"value":"-2147467259"}}],"exceptionCulprit":1}}} Table: DM_FACT_NETSALES.
+URI de clúster: WABI-NORTH-EUROPE-F-PRIMARY-redirect.analysis.windows.net
+Identificador de actividad: 2d61c335-757c-999c-dbf7-89b912a41669
+Identificador de la solicitud: b0ad6499-c592-4622-9a7a-db6ff5f6cac2
+Hora: 2025-04-08 11:12:34Z
