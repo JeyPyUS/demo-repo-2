@@ -1,5 +1,38 @@
-Error del origen de datos: {"error":{"code":"DM_GWPipeline_Gateway_MashupDataAccessError","pbi.error":{"code":"DM_GWPipeline_Gateway_MashupDataAccessError","parameters":{},"details":[{"code":"DM_ErrorDetailNameCode_UnderlyingErrorCode","detail":{"type":1,"value":"-2147467259"}},{"code":"DM_ErrorDetailNameCode_UnderlyingErrorMessage","detail":{"type":1,"value":"We're sorry, an error occurred during evaluation."}},{"code":"DM_ErrorDetailNameCode_UnderlyingHResult","detail":{"type":1,"value":"-2147467259"}}],"exceptionCulprit":1}}} Table: DM_FACT_NETSALES.
-URI de clúster: WABI-NORTH-EUROPE-F-PRIMARY-redirect.analysis.windows.net
-Identificador de actividad: 2d61c335-757c-999c-dbf7-89b912a41669
-Identificador de la solicitud: b0ad6499-c592-4622-9a7a-db6ff5f6cac2
-Hora: 2025-04-08 11:12:34Z
+---
+- name: Ansible Configuration
+  hosts: "{{ envir }}"
+
+  tasks:
+  - name: Create a task to open 2 command prompts as SYSTEM # https://docs.ansible.com/ansible/latest/collections/community/windows/win_scheduled_task_module.html
+    community.windows.win_scheduled_task:
+      enabled: "{{ 'true' if envir == 'PRO' else 'false' }}"
+      name: Data Factsheets - Monthly Execution
+      description: Ejecucion mensual para la generación de las fichas comerciales de los productos de ESP, PRT, LUX y DEU
+      actions:
+      - path: cmd.exe
+        arguments: "/c D:\\Workspace\\Python\\wmi-infinity-python-data-factsheets\\launch_main.cmd"
+        working_directory: "D:"
+      triggers:
+      - type: monthly
+        days_of_month: '10,15,20'
+        start_boundary: '2024-01-05T10:00:00'
+      username: SYSTEM
+      state: present
+
+  - name: Setting up needed directories
+    ansible.windows.win_file:
+      path: D:/Workspace/Python/Common/Logs
+      state: directory
+  
+  roles:
+  - role: wmi-infinity-python-data-factsheets_deploy
+    vars:
+      src_dir: src/
+      target_dir: D:/Workspace/Python/wmi-infinity-python-data-factsheets/
+      salt_file: vault.bin
+      target_dir_salt_file: D:/Workspace/Python/wmi-infinity-python-data-factsheets/
+    
+  - role: create_venvs
+    vars:
+      src_dir: config/venvs_config
+      target_dir: D:/Workspace/Environments/
